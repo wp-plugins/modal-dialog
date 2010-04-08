@@ -263,9 +263,6 @@ function md_footer_data() {
 				$output .= ");\n";
 				$output .= "\tsetTimeout( function(){jQuery(\"a.iframe\").trigger('click')}, " . $options['delay'] . ");\n";
 				$output .= "}\n";
-				$output .= "jQuery('#blitzform').bind('submit', function() {\n";
-				$output .= "jQuery.fancybox.close();\n";
-				$output .= "});\n";
 			
 			$output .= "});\n";
 			$output .= "</script>\n";
@@ -335,7 +332,7 @@ if ($options['active'] == true)
 	if ($display == true)
 	{
 		wp_enqueue_script('jquery');
-		wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.2.6.pack.js", "", "1.7.1");
+		wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.2.6.pack.js", "", "1.2.6");
 		wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/jquery.cookie.js", "", "1.0");
 	}
 }
