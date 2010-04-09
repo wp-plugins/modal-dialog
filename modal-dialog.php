@@ -2,7 +2,7 @@
 /*Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to create a page with a list of TV shows
-Version: 1.0
+Version: 1.0.1
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2010  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -44,6 +44,9 @@ function md_install() {
 		$options['delay'] = 2000;
 		$options['dialogwidth'] = 900;
 		$options['dialogheight'] = 700;
+		$options['cookiename'] = 'modal-dialog';
+		$options['numberoftimes'] = 1;
+		$options['exitmethod'] = 'onlyexitbutton';
 		
 		update_option('MD_PP',$options);
 	}
@@ -94,6 +97,9 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				$options['delay'] = 2000;
 				$options['dialogwidth'] = 900;
 				$options['dialogheight'] = 700;
+				$options['cookiename'] = 'modal-dialog';
+				$options['numberoftimes'] = 1;
+				$options['exitmethod'] = 'onlyexitbutton';
 		
 				update_option('MD_PP',$options);
 			}
@@ -102,7 +108,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				check_admin_referer('mdpp-config');
 				
 				foreach (array('dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
-						'delay', 'dialogwidth', 'dialogheight') as $option_name) {
+						'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod') as $option_name) {
 						if (isset($_POST[$option_name])) {
 							$options[$option_name] = $_POST[$option_name];
 						}
@@ -142,6 +148,8 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 								<option value="False"<?php if ($options['active'] == false) { echo ' selected="selected"';} ?>>No</option>
 							</select>
 						</td>
+					</tr>
+					<tr>
 						<td>Content Source</td>
 						<td>
 							<select name="contentlocation" id="contentlocation" style="width:200px;">
@@ -149,7 +157,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 								<option value="Inline"<?php if ($options['contentlocation'] == 'Inline') { echo ' selected="selected"';} ?>>Specify Below in Dialog Contents</option>
 							</select>
 						</td>
-						<td>Appearance Delay</td>
+						<td style='padding-left: 20px'>Appearance Delay</td>
 						<td><input type="text" id="delay" name="delay" size="5" value="<?php echo $options['delay']; ?>"/></td>
 					</tr>
 					<tr>
@@ -162,8 +170,23 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 						</td>
 					</tr>
 					<tr>
-						<td>Number of days until next display</td>
+						<td>Number of days until cookie expiration</td>
 						<td><input type="text" id="cookieduration" name="cookieduration" size="4" value="<?php echo $options['cookieduration']; ?>"/></td>
+						<td>Number of times to display modal dialog</td>
+						<td><input type="text" id="numberoftimes" name="numberoftimes" size="4" value="<?php echo $options['numberoftimes']; ?>"/></td>
+					</tr>
+					<tr>
+						<td>Cookie Name</td>
+						<td><input type="text" id="cookiename" name="cookiename" size="30" value="<?php echo $options['cookiename']; ?>"/></td>
+						<td>Dialog Exit Method</td>
+						<td>
+							<select name="exitmethod" id="exitmethod" style="width:200px;">
+								<option value="onlyexitbutton"<?php if ($options['exitmethod'] == 'onlyexitbutton') { echo ' selected="selected"';} ?>>Only Close Button</option>
+								<option value="anywhere"<?php if ($options['exitmethod'] == 'anywhere') { echo ' selected="selected"';} ?>>Anywhere</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
 						<td>Dialog Width</td>
 						<td><input type="text" id="dialogwidth" name="dialogwidth" size="4" value="<?php echo $options['dialogwidth']; ?>"/></td>
 						<td>Dialog Height</td>
@@ -244,24 +267,40 @@ function md_footer_data() {
 				elseif ($options['contentlocation'] == 'URL')
 					$output .= "jQuery(\"a.iframe\").fancybox({\n";
 					
-				$output .= "'hideOnOverlayClick': false,\n";
-				$output .= "'hideOnContentClick': false,\n";	
+				if ($options['exitmethod'] == 'onlyexitbutton')
+				{
+					$output .= "'hideOnOverlayClick': false,\n";
+					$output .= "'hideOnContentClick': false,\n";	
+				}
+				elseif ($options['exitmethod'] == 'anywhere')
+				{
+					$output .= "'hideOnOverlayClick': true,\n";
+					$output .= "'hideOnContentClick': true,\n";	
+				}
 				$output .= "'overlayColor': '" . $options['overlaycolor'] . "',\n";
 				$output .= "'frameWidth': " . $options['dialogwidth'] . ",\n";
 				$output .= "'frameHeight': " . $options['dialogheight'] . "\n";
 				$output .= "});\n";
-				$output .= "var feedblitz = jQuery.cookie('modaldialog');\n";
-				$output .= "if (feedblitz != null && feedblitz != \"\")\n";
-				$output .= "{}\n";
-				$output .= "else\n";
+				$output .= "var cookievalue = jQuery.cookie('" . $options['cookiename'] . "');\n";
+				$output .= "if (cookievalue == null) cookievalue = 0;\n";
+				$output .= "if (cookievalue < " . $options['numberoftimes'] . ")\n";
 				$output .= "{\n";
-				$output .= "\tjQuery.cookie('modaldialog','true'";
+				$output .= "\tcookievalue++;\n";
+				$output .= "\tjQuery.cookie('" . $options['cookiename'] . "', cookievalue";
 				
 				if ($options['cookieduration'] > 0)
 					$output .= ", { expires: " . $options['cookieduration'] .  "}";
 				
 				$output .= ");\n";
-				$output .= "\tsetTimeout( function(){jQuery(\"a.iframe\").trigger('click')}, " . $options['delay'] . ");\n";
+				$output .= "\tsetTimeout(\n";
+				$output .= "function(){\n";
+				
+				if ($options['contentlocation'] == 'Inline')
+					$output .= "jQuery(\"a#inline\").trigger('click')\n";
+				elseif ($options['contentlocation'] == 'URL')
+					$output .= "jQuery(\"a.iframe\").trigger('click')\n";
+					
+				$output .= "}, " . $options['delay'] . ");\n";
 				$output .= "}\n";
 			
 			$output .= "});\n";
@@ -295,7 +334,7 @@ function modal_dialog_header() {
 		
 		if ($display == true)
 		{
-			echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.2.6.css'/>\n";
+			echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.css'/>\n";
 			echo "<STYLE>\n";
 			echo "\t#fancy_div {\n";
 			echo "\t\tbackground-color: " . $options['backgroundcolor'] . " !important;\n";
@@ -332,7 +371,7 @@ if ($options['active'] == true)
 	if ($display == true)
 	{
 		wp_enqueue_script('jquery');
-		wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.2.6.pack.js", "", "1.2.6");
+		wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.pack.js", "", "1.3.1");
 		wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/jquery.cookie.js", "", "1.0");
 	}
 }
