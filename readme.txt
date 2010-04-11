@@ -21,6 +21,10 @@ The purpose of this plugin is to allow users to have a modal dialog appear once 
 
 == Changelog ==
 
+= 1.0.2 =
+* Corrected problem with special HTML characters getting stripped out of dialog content when specifying in text box.
+* Added option to auto-resize dialog
+
 = 1.0.1 =
 * Upgraded fancybox plugin to latest version
 * Added option to specify number of times to display dialog

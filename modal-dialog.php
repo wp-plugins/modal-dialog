@@ -2,7 +2,7 @@
 /*Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to create a page with a list of TV shows
-Version: 1.0.1
+Version: 1.0.2
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2010  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -47,6 +47,7 @@ function md_install() {
 		$options['cookiename'] = 'modal-dialog';
 		$options['numberoftimes'] = 1;
 		$options['exitmethod'] = 'onlyexitbutton';
+		$options['autosize'] = false;
 		
 		update_option('MD_PP',$options);
 	}
@@ -100,6 +101,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				$options['cookiename'] = 'modal-dialog';
 				$options['numberoftimes'] = 1;
 				$options['exitmethod'] = 'onlyexitbutton';
+				$options['autosize'] = false;
 		
 				update_option('MD_PP',$options);
 			}
@@ -118,6 +120,14 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 					if (isset($_POST[$option_name]) && $_POST[$option_name] == "True") {
 						$options[$option_name] = true;
 					} elseif (isset($_POST[$option_name]) && $_POST[$option_name] == "False") {
+						$options[$option_name] = false;
+					}
+				}
+				
+				foreach (array('autosize') as $option_name) {
+					if (isset($_POST[$option_name])) {
+						$options[$option_name] = true;
+					} else {
 						$options[$option_name] = false;
 					}
 				}
@@ -166,7 +176,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 					</tr>
 					<tr>
 						<td style='vertical-align: top; width: 150px'>Dialog Contents</td>
-						<td colspan=5><TEXTAREA id="dialogtext" NAME="dialogtext" COLS=100 ROWS=10><?php echo $options['dialogtext']; ?></TEXTAREA>
+						<td colspan=5><TEXTAREA id="dialogtext" NAME="dialogtext" COLS=100 ROWS=10><?php echo wp_specialchars(stripslashes($options['dialogtext'])); ?></TEXTAREA>
 						</td>
 					</tr>
 					<tr>
@@ -185,6 +195,10 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 								<option value="anywhere"<?php if ($options['exitmethod'] == 'anywhere') { echo ' selected="selected"';} ?>>Anywhere</option>
 							</select>
 						</td>
+					</tr>
+					<tr>
+						<td>Auto-Size Dialog</td>
+						<td><input type="checkbox" id="autosize" name="autosize" <?php if ($options['autosize']) echo ' checked="checked" '; ?>/></td>
 					</tr>
 					<tr>
 						<td>Dialog Width</td>
@@ -218,16 +232,72 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 	} // end class MD_Admin
 } //endif
 
-function md_footer_data() {
 
-	$options  = get_option('MD_PP');
+function modal_dialog_header() {
+
+	$options = get_option('MD_PP');
 	
 	if ($options['active'])
 	{
 		if ($options['pages'] != "")
 		{
 			$pagelist = explode(',', $options['pages']);
-			if (in_array(get_the_ID(), $pagelist))
+			global $post;
+			$pageid = $post->ID;
+			
+			if (in_array($pageid, $pagelist))
+				$display = true;
+			else
+				$display = false;
+		}
+		else
+			$display = true;		
+		
+		if ($display == true)
+		{
+			echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.css'/>\n";
+			echo "<STYLE>\n";
+			echo "\t#fancy_div {\n";
+			echo "\t\tbackground-color: " . $options['backgroundcolor'] . " !important;\n";
+			echo "\t\tcolor: " . $options['textcolor'] . " !important\n";
+			echo "\t}";
+			echo "</STYLE>";	
+		}
+	}
+}
+
+$version = "1.0";
+
+// adds the menu item to the admin interface
+add_action('admin_menu', array('MD_Admin','add_config_page'));
+
+add_action('wp_footer', 'modal_dialog_footer');
+add_action('wp_head', 'modal_dialog_header');
+
+$options  = get_option('MD_PP');
+
+if ($options['active'] == true)
+{
+	wp_enqueue_script('jquery');
+	wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.pack.js", "", "1.3.1");
+	wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/jquery.cookie.js", "", "1.0");
+}
+
+function modal_dialog_footer() {
+
+	$options  = get_option('MD_PP');
+	
+	echo "Footer output";
+	
+	if ($options['active'])
+	{
+		if ($options['pages'] != "")
+		{
+			$pagelist = explode(',', $options['pages']);
+			global $post;
+			$pageid = $post->ID;
+			
+			if (in_array($pageid, $pagelist))
 				$display = true;
 			else
 				$display = false;
@@ -247,7 +317,7 @@ function md_footer_data() {
 			{
 				$output .= "<a id=\"inline\" href=\"#data\"></a>\n";
 				$output .= "<div style=\"display:none\"><div id=\"data\">";
-				$output .= $options['dialogtext'];
+				$output .= stripslashes($options['dialogtext']);
 				
 				$output .= "</div></div>\n";
 			}
@@ -275,8 +345,14 @@ function md_footer_data() {
 				elseif ($options['exitmethod'] == 'anywhere')
 				{
 					$output .= "'hideOnOverlayClick': true,\n";
-					$output .= "'hideOnContentClick': true,\n";	
+					$output .= "'hideOnContentClick': false,\n";	
 				}
+				
+				if ($options['autosize'] == true)
+					$output .= "'autoDimensions': true,\n";
+				elseif ($options['autosize'] == false)
+					$output .= "'autoDimensions': false,\n";
+					
 				$output .= "'overlayColor': '" . $options['overlaycolor'] . "',\n";
 				$output .= "'frameWidth': " . $options['dialogwidth'] . ",\n";
 				$output .= "'frameHeight': " . $options['dialogheight'] . "\n";
@@ -315,65 +391,5 @@ function md_footer_data() {
 	}
 }
 
-function modal_dialog_header() {
-
-	$options = get_option('MD_PP');
-	
-	if ($options['active'])
-	{
-		if ($options['pages'] != "")
-		{
-			$pagelist = explode(',', $options['pages']);
-			if (in_array(get_the_ID(), $pagelist))
-				$display = true;
-			else
-				$display = false;
-		}
-		else
-			$display = true;		
-		
-		if ($display == true)
-		{
-			echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.css'/>\n";
-			echo "<STYLE>\n";
-			echo "\t#fancy_div {\n";
-			echo "\t\tbackground-color: " . $options['backgroundcolor'] . " !important;\n";
-			echo "\t\tcolor: " . $options['textcolor'] . " !important\n";
-			echo "\t}";
-			echo "</STYLE>";	
-		}
-	}
-}
-
-$version = "1.0";
-
-// adds the menu item to the admin interface
-add_action('admin_menu', array('MD_Admin','add_config_page'));
-
-add_action('wp_footer', 'md_footer_data');
-add_action('wp_head', 'modal_dialog_header');
-
-$options  = get_option('MD_PP');
-
-if ($options['active'] == true)
-{
-	if ($options['pages'] != "")
-		{
-			$pagelist = explode(',', $options['pages']);
-			if (in_array(get_the_ID(), $pagelist))
-				$display = true;
-			else
-				$display = false;
-		}
-		else
-			$display = true;	
-	
-	if ($display == true)
-	{
-		wp_enqueue_script('jquery');
-		wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.pack.js", "", "1.3.1");
-		wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/jquery.cookie.js", "", "1.0");
-	}
-}
 
 ?>
