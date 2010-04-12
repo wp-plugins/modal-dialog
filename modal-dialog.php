@@ -1,7 +1,7 @@
 <?php
 /*Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
-Description: A plugin used to create a page with a list of TV shows
+Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
 Version: 1.0.2
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
