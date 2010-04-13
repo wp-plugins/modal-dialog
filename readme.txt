@@ -21,6 +21,9 @@ The purpose of this plugin is to allow users to have a modal dialog appear once 
 
 == Changelog ==
 
+= 1.0.3 =
+* Fixed: Removed reference to missing function to change plugin icon
+
 = 1.0.2 =
 * Corrected problem with special HTML characters getting stripped out of dialog content when specifying in text box.
 * Added option to auto-resize dialog
