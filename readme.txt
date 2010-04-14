@@ -21,6 +21,9 @@ The purpose of this plugin is to allow users to have a modal dialog appear once 
 
 == Changelog ==
 
+= 1.0.4 =
+* Removed unnecessary debug statement
+
 = 1.0.3 =
 * Fixed: Removed reference to missing function to change plugin icon
 

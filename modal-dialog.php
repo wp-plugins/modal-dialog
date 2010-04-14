@@ -2,7 +2,7 @@
 /*Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 1.0.3
+Version: 1.0.4
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2010  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -285,8 +285,6 @@ if ($options['active'] == true)
 function modal_dialog_footer() {
 
 	$options  = get_option('MD_PP');
-	
-	echo "Footer output";
 	
 	if ($options['active'])
 	{
