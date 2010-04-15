@@ -6,11 +6,11 @@ Requires at least: 2.8
 Tested up to: 3.0
 Stable tag: trunk
 
-The purpose of this plugin is to allow users to have a modal dialog appear once when a user first visits their site. They can load content from external sites or custom HTML code into the dialog.
+The purpose of this plugin is to allow users to have a modal dialog / pop-up window appear once when a user first visits their site. They can load content from external sites or custom HTML code into the dialog.
 
 == Description ==
 
-The purpose of this plugin is to allow users to have a modal dialog appear once when a user first visits their site. They can load content from external sites or custom HTML code into the dialog. This plugin can be used to invite people to register to a newsletter, respond to a survey, or simply welcome come to a site upon their first visit.
+The purpose of this plugin is to allow users to have a modal dialog / pop-up window appear once when a user first visits their site. They can load content from external sites or custom HTML code into the dialog. This plugin can be used to invite people to register to a newsletter, respond to a survey, or simply welcome come to a site upon their first visit.
 
 == Installation ==
 
