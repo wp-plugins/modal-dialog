@@ -15,11 +15,15 @@ The purpose of this plugin is to allow users to have a modal dialog appear once 
 == Installation ==
 
 1. Download the plugin and unzip it.
-1. Upload the tune-library folder to the /wp-content/plugins/ directory of your web site.
+1. Upload the modal-dialog folder to the /wp-content/plugins/ directory of your web site.
 1. Activate the plugin in the Wordpress Admin.
 1. Using the Configuration Panel for the plugin, configure as desired
 
 == Changelog ==
+
+= 1.0.5 =
+* Fixed: Images (border / close icon) not showing up correctly in Internet Explorer
+* Fixed: Dialog Width and Height configuration parameters were ignored
 
 = 1.0.4 =
 * Removed unnecessary debug statement
@@ -41,4 +45,8 @@ The purpose of this plugin is to allow users to have a modal dialog appear once 
 
 == Frequently Asked Questions ==
 
+There are currently no FAQ questions.
+
 == Screenshots ==
+
+Check out the Modal Dialog site for a live demonstration.
