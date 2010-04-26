@@ -40,7 +40,7 @@ function md_install() {
 		$options['pages'] = "";
 		$options['overlaycolor'] = "#00CC00";
 		$options['textcolor'] = "#000000";
-		$options['backgroundcolor'] = "#CCCCCC";
+		$options['backgroundcolor'] = "#FFFFFF";
 		$options['delay'] = 2000;
 		$options['dialogwidth'] = 900;
 		$options['dialogheight'] = 700;
@@ -48,6 +48,7 @@ function md_install() {
 		$options['numberoftimes'] = 1;
 		$options['exitmethod'] = 'onlyexitbutton';
 		$options['autosize'] = false;
+		$options['bordercolor'] = '#000000';
 		
 		update_option('MD_PP',$options);
 	}
@@ -93,7 +94,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				$options['pages'] = "";
 				$options['overlaycolor'] = "#00CC00";
 				$options['textcolor'] = "#000000";
-				$options['backgroundcolor'] = "#CCCCCCC";
+				$options['backgroundcolor'] = "#FFFFFF";
 				$options['delay'] = 2000;
 				$options['dialogwidth'] = 900;
 				$options['dialogheight'] = 700;
@@ -101,6 +102,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				$options['numberoftimes'] = 1;
 				$options['exitmethod'] = 'onlyexitbutton';
 				$options['autosize'] = false;
+				$options['bordercolor'] = '#000000';
 		
 				update_option('MD_PP',$options);
 			}
@@ -109,7 +111,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				check_admin_referer('mdpp-config');
 				
 				foreach (array('dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
-						'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod') as $option_name) {
+						'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'bordercolor') as $option_name) {
 						if (isset($_POST[$option_name])) {
 							$options[$option_name] = $_POST[$option_name];
 						}
@@ -140,19 +142,29 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 
 			$options  = get_option('MD_PP');
 			?>
-			<div class="wrap">
+			<div class="wrap" style="width: 1000px">
 				<h2>Modal Dialog Configuration</h2>		
 				<?php if (($adminpage == "") || ($adminpage == "general")): ?>
 				<form name="dmadminform" action="" method="post" id="dm-config">
+				
+				<div style='width: 500px; height: 370px;float: right'>
+					<fieldset style='border:1px solid #CCC;padding:10px'>
+					<legend style='padding: 0 5px 0 5px;'><strong>If you like this plugin:</strong></legend>
+					<ul style="list-style-type: circle;padding-left: 10px">
+					<li><a href="http://yannickcorner.nayanna.biz/wordpress-plugins/modal-dialog/"><img src="<?php echo $mdpluginpath . "icons/btn_donate_LG.gif"; ?>" /> to help support new features and updates</a></li>
+					<li>Give it a good rating on the <a href="http://wordpress.org/extend/plugins/modal-dialog/">Wordpress Plugins site</a></li>
+					</ul>
+					</fieldset>
+				</div>
 				<?php
 					if ( function_exists('wp_nonce_field') )
 						wp_nonce_field('mdpp-config');
 					?>
 					<table>
 					<tr>
-						<td style='width: 300'>Activate</td>
+						<td style='width: 200px'>Activate</td>
 						<td>
-							<select name="active" id="active" style="width:200px;">
+							<select name="active" id="active" style="width:250px;">
 								<option value="True"<?php if ($options['active'] == true) { echo ' selected="selected"';} ?>>Yes</option>
 								<option value="False"<?php if ($options['active'] == false) { echo ' selected="selected"';} ?>>No</option>
 							</select>
@@ -161,12 +173,14 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 					<tr>
 						<td>Content Source</td>
 						<td>
-							<select name="contentlocation" id="contentlocation" style="width:200px;">
+							<select name="contentlocation" id="contentlocation" style="width:250px;">
 								<option value="URL"<?php if ($options['contentlocation'] == 'URL') { echo ' selected="selected"';} ?>>Web Site Address</option>
 								<option value="Inline"<?php if ($options['contentlocation'] == 'Inline') { echo ' selected="selected"';} ?>>Specify Below in Dialog Contents</option>
 							</select>
 						</td>
-						<td style='padding-left: 20px'>Appearance Delay</td>
+					</tr>
+					<tr>
+						<td>Appearance Delay (in milliseconds)</td>
 						<td><input type="text" id="delay" name="delay" size="5" value="<?php echo $options['delay']; ?>"/></td>
 					</tr>
 					<tr>
@@ -181,7 +195,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 					<tr>
 						<td>Number of days until cookie expiration</td>
 						<td><input type="text" id="cookieduration" name="cookieduration" size="4" value="<?php echo $options['cookieduration']; ?>"/></td>
-						<td>Number of times to display modal dialog</td>
+						<td style="width: 200px">Number of times to display modal dialog</td>
 						<td><input type="text" id="numberoftimes" name="numberoftimes" size="4" value="<?php echo $options['numberoftimes']; ?>"/></td>
 					</tr>
 					<tr>
@@ -189,7 +203,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 						<td><input type="text" id="cookiename" name="cookiename" size="30" value="<?php echo $options['cookiename']; ?>"/></td>
 						<td>Dialog Exit Method</td>
 						<td>
-							<select name="exitmethod" id="exitmethod" style="width:200px;">
+							<select name="exitmethod" id="exitmethod" style="width:100px;">
 								<option value="onlyexitbutton"<?php if ($options['exitmethod'] == 'onlyexitbutton') { echo ' selected="selected"';} ?>>Only Close Button</option>
 								<option value="anywhere"<?php if ($options['exitmethod'] == 'anywhere') { echo ' selected="selected"';} ?>>Anywhere</option>
 							</select>
@@ -217,6 +231,14 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 						<td>Background Color</td>
 						<td><input type="text" id="backgroundcolor" name="backgroundcolor" size="8" value="<?php echo $options['backgroundcolor']; ?>"/></td>
 					</tr>
+					<tr>
+						<td>Border Color</td>
+						<td><input type="text" id="bordercolor" name="bordercolor" size="8" value="<?php if ($options['bordercolor'] == "") echo "#FFFFFF"; else echo $options['bordercolor']; ?>"/></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>					
 					</table>
 					<p style="border:0;" class="submit"><input type="submit" name="submit" value="Update Settings &raquo;" /></p>
 				</form>
@@ -256,10 +278,16 @@ function modal_dialog_header() {
 		{
 			echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.css'/>\n";
 			echo "<STYLE>\n";
-			echo "\t#fancy_div {\n";
+			echo "\t#fancybox-inner {\n";
 			echo "\t\tbackground-color: " . $options['backgroundcolor'] . " !important;\n";
 			echo "\t\tcolor: " . $options['textcolor'] . " !important\n";
-			echo "\t}";
+			echo "\t}\n\n";
+			if ($options['bordercolor'] != "")
+			{
+				echo "\t#fancybox-outer {\n";
+				echo "\t\tbackground-color: " . $options['bordercolor'] . " !important;\n";
+				echo "\t}\n\n";
+			}
 			
 			echo "/* IE */\n";
 			echo "#fancybox-loading.fancybox-ie div	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_loading.png', sizingMethod='scale'); }\n";

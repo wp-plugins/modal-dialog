@@ -21,6 +21,10 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Changelog ==
 
+= 1.0.6 =
+* Fixed: Background Color and Text Color now work as expected
+* Added: Border Color Option
+
 = 1.0.5 =
 * Fixed: Images (border / close icon) not showing up correctly in Internet Explorer
 * Fixed: Dialog Width and Height configuration parameters were ignored
