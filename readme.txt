@@ -21,6 +21,9 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Changelog ==
 
+= 1.0.7 =
+* Prevent modal-dialog code from executing when viewing admin pages to avoid conflicts with admin page scripts
+
 = 1.0.6 =
 * Fixed: Background Color and Text Color now work as expected
 * Added: Border Color Option
