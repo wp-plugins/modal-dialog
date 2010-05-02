@@ -21,6 +21,9 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Changelog ==
 
+= 1.0.9 =
+* Removed border color option to avoid conflicts with other plugins using fancybox
+
 = 1.0.8 =
 * Changed way that background color and text color are applied to avoid conflicts with other plugins using fancybox
 
