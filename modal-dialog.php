@@ -2,7 +2,7 @@
 /*Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 1.0.7
+Version: 1.0.8
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2010  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -278,10 +278,6 @@ function modal_dialog_header() {
 		{
 			echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.css'/>\n";
 			echo "<STYLE>\n";
-			echo "\t#fancybox-inner {\n";
-			echo "\t\tbackground-color: " . $options['backgroundcolor'] . " !important;\n";
-			echo "\t\tcolor: " . $options['textcolor'] . " !important\n";
-			echo "\t}\n\n";
 			if ($options['bordercolor'] != "")
 			{
 				echo "\t#fancybox-outer {\n";
@@ -361,8 +357,9 @@ function modal_dialog_footer() {
 			
 			if ($options['contentlocation'] == 'Inline')
 			{
+				$innerwidth = 
 				$output .= "<a id=\"inline\" href=\"#data\"></a>\n";
-				$output .= "<div style=\"display:none\"><div id=\"data\">";
+				$output .= "<div style=\"display:none\"><div id=\"data\" style=\"color:" . $options['textcolor']. ";background-color:" . $options['backgroundcolor'] . ";width:100%;height:100%\">";
 				$output .= stripslashes($options['dialogtext']);
 				
 				$output .= "</div></div>\n";
