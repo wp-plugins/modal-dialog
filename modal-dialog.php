@@ -48,7 +48,6 @@ function md_install() {
 		$options['numberoftimes'] = 1;
 		$options['exitmethod'] = 'onlyexitbutton';
 		$options['autosize'] = false;
-		$options['bordercolor'] = '#000000';
 		
 		update_option('MD_PP',$options);
 	}
@@ -102,7 +101,6 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				$options['numberoftimes'] = 1;
 				$options['exitmethod'] = 'onlyexitbutton';
 				$options['autosize'] = false;
-				$options['bordercolor'] = '#000000';
 		
 				update_option('MD_PP',$options);
 			}
@@ -111,7 +109,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				check_admin_referer('mdpp-config');
 				
 				foreach (array('dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
-						'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'bordercolor') as $option_name) {
+						'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod') as $option_name) {
 						if (isset($_POST[$option_name])) {
 							$options[$option_name] = $_POST[$option_name];
 						}
@@ -231,14 +229,6 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 						<td>Background Color</td>
 						<td><input type="text" id="backgroundcolor" name="backgroundcolor" size="8" value="<?php echo $options['backgroundcolor']; ?>"/></td>
 					</tr>
-					<tr>
-						<td>Border Color</td>
-						<td><input type="text" id="bordercolor" name="bordercolor" size="8" value="<?php if ($options['bordercolor'] == "") echo "#FFFFFF"; else echo $options['bordercolor']; ?>"/></td>
-						<td></td>
-						<td></td>
-						<td></td>
-						<td></td>
-					</tr>					
 					</table>
 					<p style="border:0;" class="submit"><input type="submit" name="submit" value="Update Settings &raquo;" /></p>
 				</form>
@@ -278,12 +268,6 @@ function modal_dialog_header() {
 		{
 			echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.css'/>\n";
 			echo "<STYLE>\n";
-			if ($options['bordercolor'] != "")
-			{
-				echo "\t#fancybox-outer {\n";
-				echo "\t\tbackground-color: " . $options['bordercolor'] . " !important;\n";
-				echo "\t}\n\n";
-			}
 			
 			echo "/* IE */\n";
 			echo "#fancybox-loading.fancybox-ie div	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_loading.png', sizingMethod='scale'); }\n";
