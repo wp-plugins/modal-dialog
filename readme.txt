@@ -21,6 +21,10 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Changelog ==
 
+= 1.1 =
+* Added option to force user the specification of pages on which Modal Dialog should be displayed
+* Added option to display Modal Dialog on front page
+
 = 1.0.9 =
 * Removed border color option to avoid conflicts with other plugins using fancybox
 

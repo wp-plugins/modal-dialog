@@ -2,7 +2,7 @@
 /*Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 1.0.9
+Version: 1.1
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2010  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -48,6 +48,8 @@ function md_install() {
 		$options['numberoftimes'] = 1;
 		$options['exitmethod'] = 'onlyexitbutton';
 		$options['autosize'] = false;
+		$options['showfrontpage'] = false;
+		$options['forcepagelist'] = false;
 		
 		update_option('MD_PP',$options);
 	}
@@ -101,6 +103,8 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				$options['numberoftimes'] = 1;
 				$options['exitmethod'] = 'onlyexitbutton';
 				$options['autosize'] = false;
+				$options['showfrontpage'] = false;
+				$options['forcepagelist'] = false;				
 		
 				update_option('MD_PP',$options);
 			}
@@ -123,7 +127,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 					}
 				}
 				
-				foreach (array('autosize') as $option_name) {
+				foreach (array('autosize', 'showfrontpage', 'forcepagelist') as $option_name) {
 					if (isset($_POST[$option_name])) {
 						$options[$option_name] = true;
 					} else {
@@ -218,8 +222,14 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 						<td><input type="text" id="dialogheight" name="dialogheight" size="4" value="<?php echo $options['dialogheight']; ?>"/></td>
 					</tr>
 					<tr>
-						<td>Pages to display Modal Dialog (empty for all, comma-separated IDs)</td>
-						<td colspan=5><input type="text" id="pages" name="pages" size="120" value="<?php echo $options['pages']; ?>"/></td>
+						<td>Only show on specific pages</td>
+						<td><input type="checkbox" id="forcepagelist" name="forcepagelist" <?php if ($options['forcepagelist'] == true) echo ' checked="checked" '; ?>/></td>
+						<td>Display on front page</td>
+						<td><input type="checkbox" id="showfrontpage" name="showfrontpage" <?php if ($options['showfrontpage'] == true) echo ' checked="checked" '; ?>/></td>
+					</tr>
+					<tr>
+						<td colspan=2>Pages to display Modal Dialog (empty for all, comma-separated IDs)</td>
+						<td colspan=4><input type="text" id="pages" name="pages" size="120" value="<?php echo $options['pages']; ?>"/></td>
 					</tr>
 					<tr>
 						<td>Overlay Color</td>
@@ -250,16 +260,27 @@ function modal_dialog_header() {
 	
 	if ($options['active'] && !is_admin())
 	{
-		if ($options['pages'] != "")
+		if ($options['forcepagelist'] == false)
+			$display = true;
+		elseif ($options['showfrontpage'])
 		{
-			$pagelist = explode(',', $options['pages']);
-			global $post;
-			$pageid = $post->ID;
-			
-			if (in_array($pageid, $pagelist))
-				$display = true;
+			if (is_front_page())
+				$display = true;		
 			else
 				$display = false;
+		}			
+		elseif ($options['forcepagelist'] == true)
+		{
+			$pagelist = explode(',', $options['pages']);
+			
+			if ($pagelist)		
+				foreach ($pagelist as $pageid)
+				{
+					if (is_page($pageid))
+						$display = true;
+					else
+						$display = false;
+				}
 		}
 		else
 			$display = true;		
@@ -317,16 +338,27 @@ function modal_dialog_footer() {
 	
 	if ($options['active'] && !is_admin())
 	{
-		if ($options['pages'] != "")
+		if ($options['forcepagelist'] == false)
+			$display = true;
+		elseif ($options['showfrontpage'])
 		{
-			$pagelist = explode(',', $options['pages']);
-			global $post;
-			$pageid = $post->ID;
-			
-			if (in_array($pageid, $pagelist))
-				$display = true;
+			if (is_front_page())
+				$display = true;		
 			else
 				$display = false;
+		}			
+		elseif ($options['forcepagelist'] == true)
+		{
+			$pagelist = explode(',', $options['pages']);
+			
+			if ($pagelist)		
+				foreach ($pagelist as $pageid)
+				{
+					if (is_page($pageid))
+						$display = true;
+					else
+						$display = false;
+				}
 		}
 		else
 			$display = true;	
