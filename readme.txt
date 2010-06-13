@@ -62,7 +62,15 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Frequently Asked Questions ==
 
-There are currently no FAQ questions.
+= Why is Modal Dialog not showing up on my web site? =
+
+There are typically two main reasons why Modal Dialog does not show up correctly on web pages:
+
+1- You have another plugin installed which uses jQuery on your site that has its own version of jQuery instead of using the default version that is part of the Wordpress install. To see if this is the case, go to your site and look at the page source, then search for jQuery. If you see some versions of jQuery that get loaded from plugin directories, then this is most likely the source of the problem as they would conflict with the jQuery 1.3.2 that is delivered with Wordpress.
+
+2- The other thing to check is to see if your theme has the wp_head and wp_footer functions in the theme's header. If these functions are not present, then the plugin will not work as expected.
+
+You can send me a link to your web site if these solutions don't help you so that I can see what is happening myself and try to provide a solution.
 
 == Screenshots ==
 
