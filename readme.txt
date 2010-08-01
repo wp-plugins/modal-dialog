@@ -21,6 +21,11 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Changelog ==
 
+= 1.1.1 =
+* Added option to only show modal dialog once on a site per browser session
+* Added option to keep modal dialog centered on page when user scrolls
+* Added option to hide close button to allow user to control dialog closing through code
+
 = 1.1 =
 * Added option to force user the specification of pages on which Modal Dialog should be displayed
 * Added option to display Modal Dialog on front page

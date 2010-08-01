@@ -50,6 +50,10 @@ function md_install() {
 		$options['autosize'] = false;
 		$options['showfrontpage'] = false;
 		$options['forcepagelist'] = false;
+		$options['sessioncookiename'] = 'modal-dialog-session';
+		$options['oncepersession'] = false;
+		$options['hideclosebutton'] = false;
+		$options['centeronscroll'] = false;
 		
 		update_option('MD_PP',$options);
 	}
@@ -104,7 +108,11 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				$options['exitmethod'] = 'onlyexitbutton';
 				$options['autosize'] = false;
 				$options['showfrontpage'] = false;
-				$options['forcepagelist'] = false;				
+				$options['forcepagelist'] = false;	
+				$options['sessioncookiename'] = 'modal-dialog-session';
+				$options['oncepersession'] = false;
+				$options['hideclosebutton'] = false;
+				$options['centeronscroll'] = false;
 		
 				update_option('MD_PP',$options);
 			}
@@ -113,7 +121,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				check_admin_referer('mdpp-config');
 				
 				foreach (array('dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
-						'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod') as $option_name) {
+						'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'sessioncookiename') as $option_name) {
 						if (isset($_POST[$option_name])) {
 							$options[$option_name] = $_POST[$option_name];
 						}
@@ -127,7 +135,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 					}
 				}
 				
-				foreach (array('autosize', 'showfrontpage', 'forcepagelist') as $option_name) {
+				foreach (array('autosize', 'showfrontpage', 'forcepagelist', 'oncepersession', 'hideclosebutton', 'centeronscroll') as $option_name) {
 					if (isset($_POST[$option_name])) {
 						$options[$option_name] = true;
 					} else {
@@ -150,7 +158,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				<form name="dmadminform" action="" method="post" id="dm-config">
 				
 				<div style='width: 500px; height: 370px;float: right'>
-					<fieldset style='border:1px solid #CCC;padding:10px'>
+					<fieldset style='border:1px solid #CCC;padding:5px'>
 					<legend style='padding: 0 5px 0 5px;'><strong>If you like this plugin:</strong></legend>
 					<ul style="list-style-type: circle;padding-left: 10px">
 					<li><a href="http://yannickcorner.nayanna.biz/wordpress-plugins/modal-dialog/"><img src="<?php echo $mdpluginpath . "icons/btn_donate_LG.gif"; ?>" /> to help support new features and updates</a></li>
@@ -162,7 +170,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 					if ( function_exists('wp_nonce_field') )
 						wp_nonce_field('mdpp-config');
 					?>
-					<table>
+					<table style='width: 100%'>
 					<tr>
 						<td style='width: 200px'>Activate</td>
 						<td>
@@ -187,11 +195,11 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 					</tr>
 					<tr>
 						<td>Web Site Address</td>
-						<td colspan=5><input type="text" id="contenturl" name="contenturl" size="120" value="<?php echo $options['contenturl']; ?>"/></td>
+						<td colspan=3><input type="text" id="contenturl" name="contenturl" size="120" value="<?php echo $options['contenturl']; ?>"/></td>
 					</tr>
 					<tr>
 						<td style='vertical-align: top; width: 150px'>Dialog Contents</td>
-						<td colspan=5><TEXTAREA id="dialogtext" NAME="dialogtext" COLS=100 ROWS=10><?php echo wp_specialchars(stripslashes($options['dialogtext'])); ?></TEXTAREA>
+						<td colspan=3><TEXTAREA id="dialogtext" NAME="dialogtext" COLS=100 ROWS=10><?php echo wp_specialchars(stripslashes($options['dialogtext'])); ?></TEXTAREA>
 						</td>
 					</tr>
 					<tr>
@@ -212,6 +220,18 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 						</td>
 					</tr>
 					<tr>
+						<td>Show once per session</td>
+						<td><input type="checkbox" id="oncepersession" name="oncepersession" <?php if ($options['oncepersession']) echo ' checked="checked" '; ?>/></td>										
+						<td>Session Cookie Name</td>
+						<td><input type="text" id="cookiename" name="sessioncookiename" size="30" value="<?php if ($options['sessioncookiename'] != '') echo $options['sessioncookiename']; else echo 'modal-dialog-session'; ?>"/></td>						
+					</tr>
+					<tr>
+						<td>Hide Close Button</td>
+						<td><input type="checkbox" id="hideclosebutton" name="hideclosebutton" <?php if ($options['hideclosebutton']) echo ' checked="checked" '; ?>/></td>
+						<td>Center on scroll</td>
+						<td><input type="checkbox" id="centeronscroll" name="centeronscroll" <?php if ($options['centeronscroll']) echo ' checked="checked" '; ?>/></td>
+					</tr>
+					<tr>
 						<td>Auto-Size Dialog</td>
 						<td><input type="checkbox" id="autosize" name="autosize" <?php if ($options['autosize']) echo ' checked="checked" '; ?>/></td>
 					</tr>
@@ -228,14 +248,16 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 						<td><input type="checkbox" id="showfrontpage" name="showfrontpage" <?php if ($options['showfrontpage'] == true) echo ' checked="checked" '; ?>/></td>
 					</tr>
 					<tr>
-						<td colspan=2>Pages to display Modal Dialog (empty for all, comma-separated IDs)</td>
-						<td colspan=4><input type="text" id="pages" name="pages" size="120" value="<?php echo $options['pages']; ?>"/></td>
+						<td>Pages to display Modal Dialog (empty for all, comma-separated IDs)</td>
+						<td colspan=3><input type="text" id="pages" name="pages" size="120" value="<?php echo $options['pages']; ?>"/></td>
 					</tr>
 					<tr>
 						<td>Overlay Color</td>
 						<td><input type="text" id="overlaycolor" name="overlaycolor" size="8" value="<?php echo $options['overlaycolor']; ?>"/></td>
 						<td>Text Color (not used with web site address)</td>
 						<td><input type="text" id="textcolor" name="textcolor" size="8" value="<?php echo $options['textcolor']; ?>"/></td>
+					</tr>
+					<tr>
 						<td>Background Color</td>
 						<td><input type="text" id="backgroundcolor" name="backgroundcolor" size="8" value="<?php echo $options['backgroundcolor']; ?>"/></td>
 					</tr>
@@ -407,36 +429,65 @@ function modal_dialog_footer() {
 					$output .= "'hideOnContentClick': false,\n";	
 				}
 				
+				if ($options['hideclosebutton'] == true)
+				{
+					$output .= "'showCloseButton': false,\n";
+				}
+				
+				if ($options['centeronscroll'] == true)
+				{
+					$output .= "'centerOnScroll': true,\n";
+				}
+				
 				if ($options['autosize'] == true)
 					$output .= "'autoDimensions': true,\n";
 				elseif ($options['autosize'] == false)
 					$output .= "'autoDimensions': false,\n";
 					
+				if ($options['sessioncookiename'] != '')
+					$sessioncookiename = $options['sessioncookiename'];
+				else
+					$sessioncookiename = 'modaldialogsession';
+					
 				$output .= "'overlayColor': '" . $options['overlaycolor'] . "',\n";
 				$output .= "'width': " . $options['dialogwidth'] . ",\n";
 				$output .= "'height': " . $options['dialogheight'] . "\n";
 				$output .= "});\n";
-				$output .= "var cookievalue = jQuery.cookie('" . $options['cookiename'] . "');\n";
-				$output .= "if (cookievalue == null) cookievalue = 0;\n";
-				$output .= "if (cookievalue < " . $options['numberoftimes'] . ")\n";
-				$output .= "{\n";
-				$output .= "\tcookievalue++;\n";
-				$output .= "\tjQuery.cookie('" . $options['cookiename'] . "', cookievalue";
+
+				if ($options['oncepersession'] == true)
+				{
+					$output .= "var sessioncookie = jQuery.cookie('" . $sessioncookiename . "');\n";
+					$output .= "if (sessioncookie == null)\n";
+					$output .= "{\n";
+					$output .= "\tjQuery.cookie('" . $sessioncookiename . "', 0);\n";
+				}
+				
+				$output .= "\tvar cookievalue = jQuery.cookie('" . $options['cookiename'] . "');\n";
+				$output .= "\tif (cookievalue == null) cookievalue = 0;\n";
+				$output .= "\tif (cookievalue < " . $options['numberoftimes'] . ")\n";
+				$output .= "\t{\n";
+				$output .= "\t\tcookievalue++;\n";
+				$output .= "\t\tjQuery.cookie('" . $options['cookiename'] . "', cookievalue";
 				
 				if ($options['cookieduration'] > 0)
 					$output .= ", { expires: " . $options['cookieduration'] .  "}";
 				
 				$output .= ");\n";
-				$output .= "\tsetTimeout(\n";
-				$output .= "function(){\n";
+				$output .= "\t\tsetTimeout(\n";
+				$output .= "\t\t\tfunction(){\n";
 				
 				if ($options['contentlocation'] == 'Inline')
-					$output .= "jQuery(\"a#inline\").trigger('click')\n";
+					$output .= "\t\t\t\tjQuery(\"a#inline\").trigger('click')\n";
 				elseif ($options['contentlocation'] == 'URL')
-					$output .= "jQuery(\"a.iframe\").trigger('click')\n";
+					$output .= "\t\t\t\tjQuery(\"a.iframe\").trigger('click')\n";
 					
-				$output .= "}, " . $options['delay'] . ");\n";
-				$output .= "}\n";
+				$output .= "\t\t\t}, " . $options['delay'] . ");\n";
+				$output .= "\t\t};\n";
+				
+				if ($options['oncepersession'] == true)
+				{
+					$output .= "\t}\n";
+				}
 			
 			$output .= "});\n";
 			$output .= "</script>\n";
