@@ -21,6 +21,9 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Changelog ==
 
+= 1.1.2 =
+* Added parameters to API calls to allow user to call on specific page templates
+
 = 1.1.1 =
 * Added option to only show modal dialog once on a site per browser session
 * Added option to keep modal dialog centered on page when user scrolls

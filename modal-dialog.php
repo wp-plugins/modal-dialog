@@ -2,7 +2,7 @@
 /*Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 1.1.1
+Version: 1.1.2
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2010  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -276,11 +276,11 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 } //endif
 
 
-function modal_dialog_header() {
+function modal_dialog_header($manualdisplay = false) {
 
 	$options = get_option('MD_PP');
 	
-	if ($options['active'] && !is_admin())
+	if (($options['active'] || $manualdisplay) && !is_admin())
 	{
 		if ($options['forcepagelist'] == false)
 			$display = true;
@@ -337,6 +337,18 @@ function modal_dialog_header() {
 	}
 }
 
+function modal_dialog_init($manualdisplay = false)
+{
+	$options = get_option('MD_PP');
+	
+	if (($options['active'] == true || $manualdisplay) && !is_admin())
+	{
+		wp_enqueue_script('jquery');
+		wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.pack.js", "", "1.3.1");
+		wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/jquery.cookie.js", "", "1.0");
+	}	
+}
+
 $version = "1.0";
 
 // adds the menu item to the admin interface
@@ -344,21 +356,17 @@ add_action('admin_menu', array('MD_Admin','add_config_page'));
 
 add_action('wp_footer', 'modal_dialog_footer');
 add_action('wp_head', 'modal_dialog_header');
+add_action('init', 'modal_dialog_init');
 
 $options  = get_option('MD_PP');
 
-if ($options['active'] == true && !is_admin())
-{
-	wp_enqueue_script('jquery');
-	wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.pack.js", "", "1.3.1");
-	wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/jquery.cookie.js", "", "1.0");
-}
 
-function modal_dialog_footer() {
+
+function modal_dialog_footer($manualdisplay = false) {
 
 	$options  = get_option('MD_PP');
 	
-	if ($options['active'] && !is_admin())
+	if (($options['active'] || $manualdisplay) && !is_admin())
 	{
 		if ($options['forcepagelist'] == false)
 			$display = true;
