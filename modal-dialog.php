@@ -2,7 +2,7 @@
 /*Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 1.1.3
+Version: 1.1.4
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2010  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -228,7 +228,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 						<td><input type="text" id="cookiename" name="sessioncookiename" size="30" value="<?php if ($options['sessioncookiename'] != '') echo $options['sessioncookiename']; else echo 'modal-dialog-session'; ?>"/></td>						
 					</tr>
 					<tr>
-						<td>Set display cookie manually</td>
+						<td>Set display cookies manually</td>
 						<td><input type="checkbox" id="manualcookiecreation" name="manualcookiecreation" <?php if ($options['manualcookiecreation']) echo ' checked="checked" '; ?>/></td>										
 					</tr>
 					<tr>
@@ -473,7 +473,8 @@ function modal_dialog_footer($manualdisplay = false) {
 					$output .= "var sessioncookie = jQuery.cookie('" . $sessioncookiename . "');\n";
 					$output .= "if (sessioncookie == null)\n";
 					$output .= "{\n";
-					$output .= "\tjQuery.cookie('" . $sessioncookiename . "', 0);\n";
+					if ($options['manualcookiecreation'] == false)
+						$output .= "\tjQuery.cookie('" . $sessioncookiename . "', 0);\n";
 				}
 				
 				$output .= "\tvar cookievalue = jQuery.cookie('" . $options['cookiename'] . "');\n";

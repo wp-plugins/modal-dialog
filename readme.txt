@@ -21,6 +21,9 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Changelog ==
 
+= 1.1.4 =
+* Extended manual cookie creation to session cookies that control only showing the dialog once per session
+
 = 1.1.3 =
 * Added option to tell Modal Dialog that you will manually set the cookie manually after the dialog is displayed
 
