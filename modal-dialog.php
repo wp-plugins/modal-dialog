@@ -2,7 +2,7 @@
 /*Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 1.1.2
+Version: 1.1.3
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2010  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -54,6 +54,7 @@ function md_install() {
 		$options['oncepersession'] = false;
 		$options['hideclosebutton'] = false;
 		$options['centeronscroll'] = false;
+		$options['manualcookiecreation'] = false;
 		
 		update_option('MD_PP',$options);
 	}
@@ -113,6 +114,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				$options['oncepersession'] = false;
 				$options['hideclosebutton'] = false;
 				$options['centeronscroll'] = false;
+				$options['manualcookiecreation'] = false;
 		
 				update_option('MD_PP',$options);
 			}
@@ -135,7 +137,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 					}
 				}
 				
-				foreach (array('autosize', 'showfrontpage', 'forcepagelist', 'oncepersession', 'hideclosebutton', 'centeronscroll') as $option_name) {
+				foreach (array('autosize', 'showfrontpage', 'forcepagelist', 'oncepersession', 'hideclosebutton', 'centeronscroll', 'manualcookiecreation') as $option_name) {
 					if (isset($_POST[$option_name])) {
 						$options[$option_name] = true;
 					} else {
@@ -224,6 +226,10 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 						<td><input type="checkbox" id="oncepersession" name="oncepersession" <?php if ($options['oncepersession']) echo ' checked="checked" '; ?>/></td>										
 						<td>Session Cookie Name</td>
 						<td><input type="text" id="cookiename" name="sessioncookiename" size="30" value="<?php if ($options['sessioncookiename'] != '') echo $options['sessioncookiename']; else echo 'modal-dialog-session'; ?>"/></td>						
+					</tr>
+					<tr>
+						<td>Set display cookie manually</td>
+						<td><input type="checkbox" id="manualcookiecreation" name="manualcookiecreation" <?php if ($options['manualcookiecreation']) echo ' checked="checked" '; ?>/></td>										
 					</tr>
 					<tr>
 						<td>Hide Close Button</td>
@@ -474,13 +480,17 @@ function modal_dialog_footer($manualdisplay = false) {
 				$output .= "\tif (cookievalue == null) cookievalue = 0;\n";
 				$output .= "\tif (cookievalue < " . $options['numberoftimes'] . ")\n";
 				$output .= "\t{\n";
-				$output .= "\t\tcookievalue++;\n";
-				$output .= "\t\tjQuery.cookie('" . $options['cookiename'] . "', cookievalue";
 				
-				if ($options['cookieduration'] > 0)
-					$output .= ", { expires: " . $options['cookieduration'] .  "}";
-				
-				$output .= ");\n";
+				if ($options['manualcookiecreation'] == false)
+				{
+					$output .= "\t\tcookievalue++;\n";
+					$output .= "\t\tjQuery.cookie('" . $options['cookiename'] . "', cookievalue";
+					
+					if ($options['cookieduration'] > 0)
+						$output .= ", { expires: " . $options['cookieduration'] .  "}";
+					
+					$output .= ");\n";
+				}
 				$output .= "\t\tsetTimeout(\n";
 				$output .= "\t\t\tfunction(){\n";
 				

@@ -21,6 +21,9 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Changelog ==
 
+= 1.1.3 =
+* Added option to tell Modal Dialog that you will manually set the cookie manually after the dialog is displayed
+
 = 1.1.2 =
 * Added parameters to API calls to allow user to call on specific page templates
 
@@ -79,6 +82,18 @@ There are typically two main reasons why Modal Dialog does not show up correctly
 2- The other thing to check is to see if your theme has the wp_head and wp_footer functions in the theme's header. If these functions are not present, then the plugin will not work as expected.
 
 You can send me a link to your web site if these solutions don't help you so that I can see what is happening myself and try to provide a solution.
+
+= How can I close the Modal Dialog Window Manually? =
+
+You can create a button or other control that calls the following javascript:
+
+parent.jQuery.fancybox.close();
+
+= How can I manually set the cookie if I ask Modal Dialog to let me do it manually?
+
+Call the following javascript / jQuery function, setting the cookie-name to match the name entered in the Modal Dialog settings, the cookievalue and the duration to any duration that you deem acceptable.
+
+jQuery.cookie('cookie-name', cookievalue, { expires: 365 });
 
 == Screenshots ==
 
