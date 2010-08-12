@@ -2,7 +2,7 @@
 /*Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 1.1.4
+Version: 1.1.5
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2010  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -55,6 +55,7 @@ function md_install() {
 		$options['hideclosebutton'] = false;
 		$options['centeronscroll'] = false;
 		$options['manualcookiecreation'] = false;
+		$options['overlayopacity'] = '0.3';
 		
 		update_option('MD_PP',$options);
 	}
@@ -115,6 +116,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				$options['hideclosebutton'] = false;
 				$options['centeronscroll'] = false;
 				$options['manualcookiecreation'] = false;
+				$options['overlayopacity'] = '0.3';
 		
 				update_option('MD_PP',$options);
 			}
@@ -123,7 +125,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				check_admin_referer('mdpp-config');
 				
 				foreach (array('dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
-						'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'sessioncookiename') as $option_name) {
+						'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'sessioncookiename', 'overlayopacity') as $option_name) {
 						if (isset($_POST[$option_name])) {
 							$options[$option_name] = $_POST[$option_name];
 						}
@@ -260,12 +262,15 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 					<tr>
 						<td>Overlay Color</td>
 						<td><input type="text" id="overlaycolor" name="overlaycolor" size="8" value="<?php echo $options['overlaycolor']; ?>"/></td>
-						<td>Text Color (not used with web site address)</td>
-						<td><input type="text" id="textcolor" name="textcolor" size="8" value="<?php echo $options['textcolor']; ?>"/></td>
+						<td>Overlay Opacity (0 to 1)</td>
+						<td><input type="text" id="overlayopacity" name="overlayopacity" size="8" value="<?php if ($options['overlayopacity'] == '') echo '0.3'; else echo $options['overlayopacity']; ?>"/></td>
 					</tr>
 					<tr>
+						<td>Text Color (not used with web site address)</td>
+						<td><input type="text" id="textcolor" name="textcolor" size="8" value="<?php echo $options['textcolor']; ?>"/></td>
 						<td>Background Color</td>
 						<td><input type="text" id="backgroundcolor" name="backgroundcolor" size="8" value="<?php echo $options['backgroundcolor']; ?>"/></td>
+						
 					</tr>
 					</table>
 					<p style="border:0;" class="submit"><input type="submit" name="submit" value="Update Settings &raquo;" /></p>
@@ -465,7 +470,11 @@ function modal_dialog_footer($manualdisplay = false) {
 					
 				$output .= "'overlayColor': '" . $options['overlaycolor'] . "',\n";
 				$output .= "'width': " . $options['dialogwidth'] . ",\n";
-				$output .= "'height': " . $options['dialogheight'] . "\n";
+				$output .= "'height': " . $options['dialogheight'] . ",\n";
+				
+				if ($options['overlayopacity'] == '') $options['overlayopacity'] = '0.3';
+				
+				$output .= "'overlayOpacity': " . $options['overlayopacity'] . "\n";
 				$output .= "});\n";
 
 				if ($options['oncepersession'] == true)

@@ -21,6 +21,9 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Changelog ==
 
+= 1.1.5 =
+* Added new option to control overlay opacity
+
 = 1.1.4 =
 * Extended manual cookie creation to session cookies that control only showing the dialog once per session
 
