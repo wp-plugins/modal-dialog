@@ -483,7 +483,7 @@ function modal_dialog_footer($manualdisplay = false) {
 					$output .= "if (sessioncookie == null)\n";
 					$output .= "{\n";
 					if ($options['manualcookiecreation'] == false)
-						$output .= "\tjQuery.cookie('" . $sessioncookiename . "', 0);\n";
+						$output .= "\tjQuery.cookie('" . $sessioncookiename . "', 0, { path: '/' });\n";
 				}
 				
 				$output .= "\tvar cookievalue = jQuery.cookie('" . $options['cookiename'] . "');\n";
@@ -497,7 +497,9 @@ function modal_dialog_footer($manualdisplay = false) {
 					$output .= "\t\tjQuery.cookie('" . $options['cookiename'] . "', cookievalue";
 					
 					if ($options['cookieduration'] > 0)
-						$output .= ", { expires: " . $options['cookieduration'] .  "}";
+						$output .= ", { expires: " . $options['cookieduration'] .  ", path: '/'}";
+					else
+						$output .= ", { path: '/' }";
 					
 					$output .= ");\n";
 				}
