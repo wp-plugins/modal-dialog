@@ -2,7 +2,7 @@
 /*Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 1.1.6
+Version: 1.1.7
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2010  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -56,6 +56,8 @@ function md_install() {
 		$options['centeronscroll'] = false;
 		$options['manualcookiecreation'] = false;
 		$options['overlayopacity'] = '0.3';
+		$options['autoclose'] = false;
+		$options['autoclosetime'] = 5000;
 		
 		update_option('MD_PP',$options);
 	}
@@ -117,6 +119,8 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				$options['centeronscroll'] = false;
 				$options['manualcookiecreation'] = false;
 				$options['overlayopacity'] = '0.3';
+				$options['autoclose'] = false;
+				$options['autoclosetime'] = 5000;
 		
 				update_option('MD_PP',$options);
 			}
@@ -125,7 +129,8 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				check_admin_referer('mdpp-config');
 				
 				foreach (array('dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
-						'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'sessioncookiename', 'overlayopacity') as $option_name) {
+						'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'sessioncookiename', 'overlayopacity',
+						'autoclosetime') as $option_name) {
 						if (isset($_POST[$option_name])) {
 							$options[$option_name] = $_POST[$option_name];
 						}
@@ -139,7 +144,8 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 					}
 				}
 				
-				foreach (array('autosize', 'showfrontpage', 'forcepagelist', 'oncepersession', 'hideclosebutton', 'centeronscroll', 'manualcookiecreation') as $option_name) {
+				foreach (array('autosize', 'showfrontpage', 'forcepagelist', 'oncepersession', 'hideclosebutton', 'centeronscroll', 'manualcookiecreation',
+								'autoclose') as $option_name) {
 					if (isset($_POST[$option_name])) {
 						$options[$option_name] = true;
 					} else {
@@ -248,6 +254,12 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 						<td><input type="text" id="dialogwidth" name="dialogwidth" size="4" value="<?php echo $options['dialogwidth']; ?>"/></td>
 						<td>Dialog Height</td>
 						<td><input type="text" id="dialogheight" name="dialogheight" size="4" value="<?php echo $options['dialogheight']; ?>"/></td>
+					</tr>
+					<tr>
+						<td>Auto-Close Dialog</td>
+						<td><input type="checkbox" id="autoclose" name="autoclose" <?php if ($options['autoclose']) echo ' checked="checked" '; ?>/></td>
+						<td>Auto-Close Time (in ms)</td>
+						<td><input type="text" id="autoclosetime" name="autoclosetime" size="8" value="<?php echo $options['autoclosetime']; ?>"/></td>						
 					</tr>
 					<tr>
 						<td>Only show on specific pages</td>
@@ -520,6 +532,10 @@ function modal_dialog_footer($manualdisplay = false) {
 				}
 			
 			$output .= "});\n";
+			if ($options['autoclose'] == true && $options['autoclosetime'] != 0)
+			{
+				$output .= "setTimeout('parent.jQuery.fancybox.close();'," . $options['autoclosetime']. ");\n";
+			}
 			$output .= "</script>\n";
 			
 			$output .= "</div>\n";

@@ -21,6 +21,9 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Changelog ==
 
+= 1.1.7 =
+* Added option to auto-close dialog after a user-defined period (set in milliseconds)
+
 = 1.1.6 =
 * Made cookies global to the site instead of specific to a page
 
