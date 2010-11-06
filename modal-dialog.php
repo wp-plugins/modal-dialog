@@ -28,7 +28,7 @@ else if (is_file(trailingslashit(ABSPATH.PLUGINDIR).'modal-dialog/modal-dialog.p
 	define('MD_FILE', trailingslashit(ABSPATH.PLUGINDIR).'modal-dialog/modal-dialog.php');
 }
 
-function md_install() {
+function modal_dialog_install() {
 	$options  = get_option('MD_PP');
 
 	if ($options == false) {
@@ -62,7 +62,7 @@ function md_install() {
 		update_option('MD_PP',$options);
 	}
 }
-register_activation_hook(MD_FILE, 'md_install');
+register_activation_hook(MD_FILE, 'modal_dialog_install');
 
 
 
