@@ -21,6 +21,9 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Changelog ==
 
+= 1.1.9 =
+* Added call to reset query mechanism so that Modal Dialog properly writes code to page footer
+
 = 1.1.8 =
 * Renamed installation function to avoid conflicts with plugin Mobile Detector
 
