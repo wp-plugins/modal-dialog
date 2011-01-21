@@ -2,7 +2,7 @@
 /*Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 1.1.9
+Version: 1.2
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2010  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -167,15 +167,21 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				<?php if (($adminpage == "") || ($adminpage == "general")): ?>
 				<form name="dmadminform" action="" method="post" id="dm-config">
 				
-				<div style='width: 500px; height: 370px;float: right'>
-					<fieldset style='border:1px solid #CCC;padding:5px'>
-					<legend style='padding: 0 5px 0 5px;'><strong>If you like this plugin:</strong></legend>
+				<table>
+				<tr>
+				<td style='vertical-align: top; padding: 10px; border: 1px solid #cccccc'>
+					<h3>If you like this plugin:</h3>
 					<ul style="list-style-type: circle;padding-left: 10px">
-					<li><a href="http://yannickcorner.nayanna.biz/wordpress-plugins/modal-dialog/"><img src="<?php echo $mdpluginpath . "icons/btn_donate_LG.gif"; ?>" /> to help support new features and updates</a></li>
+					<li><a style='text-decoration: none; ' href="http://yannickcorner.nayanna.biz/wordpress-plugins/modal-dialog/"><img src="<?php echo $mdpluginpath . "icons/btn_donate_LG.gif"; ?>" /> to help support new features and updates</a></li>
 					<li>Give it a good rating on the <a href="http://wordpress.org/extend/plugins/modal-dialog/">Wordpress Plugins site</a></li>
 					</ul>
+				</td>
+				<td style='vertical-align: top; padding: 10px; border: 1px solid #cccccc'>
+					<div><h3>ThemeFuse Original WP Themes</h3><br />If you are looking to buy an original WP theme, take a look at <a href="https://www.e-junkie.com/ecom/gb.php?cl=136641&c=ib&aff=153522" target="ejejcsingle">ThemeFuse</a>?<br />They have a nice 1-click installer, great support and good-looking themes.</div><div style='text-align: center; padding-top: 10px'><a href="https://www.e-junkie.com/ecom/gb.php?cl=136641&c=ib&aff=153522" target="ejejcsingle"><img src='http://themefuse.com/wp-content/themes/themefuse/images/campaigns/themefuse.jpg' /></a></div>
 					</fieldset>
-				</div>
+				</td>
+				</tr>
+				</table>
 				<?php
 					if ( function_exists('wp_nonce_field') )
 						wp_nonce_field('mdpp-config');

@@ -3,7 +3,7 @@ Contributors: jackdewey
 Donate link: http://yannickcorner.nayanna.biz/wordpress-plugins/modal-dialog/
 Tags: modal, dialog, pop-up, window
 Requires at least: 2.8
-Tested up to: 3.0
+Tested up to: 3.1
 Stable tag: trunk
 
 The purpose of this plugin is to allow users to have a modal dialog / pop-up window appear once when a user first visits their site. They can load content from external sites or custom HTML code into the dialog.
@@ -20,6 +20,9 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 1. Using the Configuration Panel for the plugin, configure as desired
 
 == Changelog ==
+
+= 1.2 =
+* Tested for Wordpress 3.1 Compatibility
 
 = 1.1.9 =
 * Added call to reset query mechanism so that Modal Dialog properly writes code to page footer
