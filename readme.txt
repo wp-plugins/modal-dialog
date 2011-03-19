@@ -21,6 +21,9 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Changelog ==
 
+= 1.2.1 =
+* Added ability to display Modal Dialog on specific single post pages
+
 = 1.2 =
 * Tested for Wordpress 3.1 Compatibility
 

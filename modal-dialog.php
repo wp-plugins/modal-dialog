@@ -2,10 +2,10 @@
 /*Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 1.2
+Version: 1.2.1
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
-Copyright 2010  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
+Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
 
 This program is free software; you can redistribute it and/or modify   
 it under the terms of the GNU General Public License as published by    
@@ -58,6 +58,7 @@ function modal_dialog_install() {
 		$options['overlayopacity'] = '0.3';
 		$options['autoclose'] = false;
 		$options['autoclosetime'] = 5000;
+		$options['posts'] = "";
 		
 		update_option('MD_PP',$options);
 	}
@@ -121,6 +122,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				$options['overlayopacity'] = '0.3';
 				$options['autoclose'] = false;
 				$options['autoclosetime'] = 5000;
+				$options['posts'] = "";
 		
 				update_option('MD_PP',$options);
 			}
@@ -130,7 +132,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				
 				foreach (array('dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
 						'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'sessioncookiename', 'overlayopacity',
-						'autoclosetime') as $option_name) {
+						'autoclosetime', 'posts') as $option_name) {
 						if (isset($_POST[$option_name])) {
 							$options[$option_name] = $_POST[$option_name];
 						}
@@ -268,7 +270,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 						<td><input type="text" id="autoclosetime" name="autoclosetime" size="8" value="<?php echo $options['autoclosetime']; ?>"/></td>						
 					</tr>
 					<tr>
-						<td>Only show on specific pages</td>
+						<td>Only show on specific pages and single posts</td>
 						<td><input type="checkbox" id="forcepagelist" name="forcepagelist" <?php if ($options['forcepagelist'] == true) echo ' checked="checked" '; ?>/></td>
 						<td>Display on front page</td>
 						<td><input type="checkbox" id="showfrontpage" name="showfrontpage" <?php if ($options['showfrontpage'] == true) echo ' checked="checked" '; ?>/></td>
@@ -276,6 +278,10 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 					<tr>
 						<td>Pages to display Modal Dialog (empty for all, comma-separated IDs)</td>
 						<td colspan=3><input type="text" id="pages" name="pages" size="120" value="<?php echo $options['pages']; ?>"/></td>
+					</tr>
+					<tr>
+						<td>Single Posts IDs to display Modal Dialog (comma-separated IDs)</td>
+						<td colspan=3><input type="text" id="posts" name="posts" size="120" value="<?php echo $options['posts']; ?>"/></td>
 					</tr>
 					<tr>
 						<td>Overlay Color</td>
@@ -332,6 +338,20 @@ function modal_dialog_header($manualdisplay = false) {
 					else
 						$display = false;
 				}
+				
+			if ($display == false)
+			{
+				$postslist = explode(",", $options['posts']);
+				
+				if ($postslist)		
+				foreach ($postslist as $postid)
+				{
+					if (is_single($postid))
+						$display = true;
+					else
+						$display = false;
+				}
+			}
 		}
 		else
 			$display = true;		
@@ -419,6 +439,20 @@ function modal_dialog_footer($manualdisplay = false) {
 					else
 						$display = false;
 				}
+				
+			if ($display == false)
+			{
+				$postslist = explode(",", $options['posts']);
+				
+				if ($postslist)		
+				foreach ($postslist as $postid)
+				{
+					if (is_single($postid))
+						$display = true;
+					else
+						$display = false;
+				}
+			}
 		}
 		else
 			$display = true;	
