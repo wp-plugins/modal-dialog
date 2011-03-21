@@ -21,6 +21,9 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Changelog ==
 
+= 1.2.2 =
+* Fixed code to get Modal Dialog only to show on specific pages or posts
+
 = 1.2.1 =
 * Added ability to display Modal Dialog on specific single post pages
 

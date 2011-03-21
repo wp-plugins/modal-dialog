@@ -58,7 +58,6 @@ function modal_dialog_install() {
 		$options['overlayopacity'] = '0.3';
 		$options['autoclose'] = false;
 		$options['autoclosetime'] = 5000;
-		$options['posts'] = "";
 		
 		update_option('MD_PP',$options);
 	}
@@ -122,7 +121,6 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				$options['overlayopacity'] = '0.3';
 				$options['autoclose'] = false;
 				$options['autoclosetime'] = 5000;
-				$options['posts'] = "";
 		
 				update_option('MD_PP',$options);
 			}
@@ -132,7 +130,7 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 				
 				foreach (array('dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
 						'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'sessioncookiename', 'overlayopacity',
-						'autoclosetime', 'posts') as $option_name) {
+						'autoclosetime') as $option_name) {
 						if (isset($_POST[$option_name])) {
 							$options[$option_name] = $_POST[$option_name];
 						}
@@ -276,12 +274,8 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 						<td><input type="checkbox" id="showfrontpage" name="showfrontpage" <?php if ($options['showfrontpage'] == true) echo ' checked="checked" '; ?>/></td>
 					</tr>
 					<tr>
-						<td>Pages to display Modal Dialog (empty for all, comma-separated IDs)</td>
+						<td>Pages and posts to display Modal Dialog (empty for all, comma-separated IDs)</td>
 						<td colspan=3><input type="text" id="pages" name="pages" size="120" value="<?php echo $options['pages']; ?>"/></td>
-					</tr>
-					<tr>
-						<td>Single Posts IDs to display Modal Dialog (comma-separated IDs)</td>
-						<td colspan=3><input type="text" id="posts" name="posts" size="120" value="<?php echo $options['posts']; ?>"/></td>
 					</tr>
 					<tr>
 						<td>Overlay Color</td>
@@ -333,25 +327,14 @@ function modal_dialog_header($manualdisplay = false) {
 			if ($pagelist)		
 				foreach ($pagelist as $pageid)
 				{
-					if (is_page($pageid))
+					if ( is_page(intval($pageid)) || is_single($pageid) )
+					{
 						$display = true;
+						break;
+					}
 					else
 						$display = false;
 				}
-				
-			if ($display == false)
-			{
-				$postslist = explode(",", $options['posts']);
-				
-				if ($postslist)		
-				foreach ($postslist as $postid)
-				{
-					if (is_single($postid))
-						$display = true;
-					else
-						$display = false;
-				}
-			}
 		}
 		else
 			$display = true;		
@@ -434,25 +417,14 @@ function modal_dialog_footer($manualdisplay = false) {
 			if ($pagelist)		
 				foreach ($pagelist as $pageid)
 				{
-					if (is_page($pageid))
+					if ( is_page(intval($pageid)) || is_single($pageid) )
+					{
 						$display = true;
+						break;
+					}
 					else
 						$display = false;
 				}
-				
-			if ($display == false)
-			{
-				$postslist = explode(",", $options['posts']);
-				
-				if ($postslist)		
-				foreach ($postslist as $postid)
-				{
-					if (is_single($postid))
-						$display = true;
-					else
-						$display = false;
-				}
-			}
 		}
 		else
 			$display = true;	
@@ -467,7 +439,6 @@ function modal_dialog_footer($manualdisplay = false) {
 			
 			if ($options['contentlocation'] == 'Inline')
 			{
-				$innerwidth = 
 				$output .= "<a id=\"inline\" href=\"#data\"></a>\n";
 				$output .= "<div style=\"display:none\"><div id=\"data\" style=\"color:" . $options['textcolor']. ";background-color:" . $options['backgroundcolor'] . ";width:100%;height:100%\">";
 				$output .= stripslashes($options['dialogtext']);
