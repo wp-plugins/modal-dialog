@@ -21,6 +21,9 @@ The purpose of this plugin is to allow users to have a modal dialog / pop-up win
 
 == Changelog ==
 
+= 1.2.3 =
+* Added button to easily delete all cookies for a site from admin panel to facilitate testing
+
 = 1.2.2 =
 * Fixed code to get Modal Dialog only to show on specific pages or posts
 

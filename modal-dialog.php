@@ -239,11 +239,13 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 						<td>Show once per session</td>
 						<td><input type="checkbox" id="oncepersession" name="oncepersession" <?php if ($options['oncepersession']) echo ' checked="checked" '; ?>/></td>										
 						<td>Session Cookie Name</td>
-						<td><input type="text" id="cookiename" name="sessioncookiename" size="30" value="<?php if ($options['sessioncookiename'] != '') echo $options['sessioncookiename']; else echo 'modal-dialog-session'; ?>"/></td>						
+						<td><input type="text" id="sessioncookiename" name="sessioncookiename" size="30" value="<?php if ($options['sessioncookiename'] != '') echo $options['sessioncookiename']; else echo 'modal-dialog-session'; ?>"/></td>						
 					</tr>
 					<tr>
 						<td>Set display cookies manually</td>
 						<td><input type="checkbox" id="manualcookiecreation" name="manualcookiecreation" <?php if ($options['manualcookiecreation']) echo ' checked="checked" '; ?>/></td>										
+						<td></td>
+						<td><input type="button" id="deletecookies" name="deletecookies" value="Delete All Cookies" /></td>
 					</tr>
 					<tr>
 						<td>Hide Close Button</td>
@@ -293,6 +295,19 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 					</table>
 					<p style="border:0;" class="submit"><input type="submit" name="submit" value="Update Settings &raquo;" /></p>
 				</form>
+				
+				<script type="text/javascript">
+					jQuery(document).ready(function() {
+						jQuery("#deletecookies").click(function() {
+							jQuery.cookie(jQuery("#cookiename").val(), null, { path: '/' });
+							jQuery.cookie(jQuery("#sessioncookiename").val(), null, { path: '/' });
+							alert("Deleted all cookies");
+						});
+					});
+				</script>
+					
+				
+				
 				<?php endif; ?>				
 			</div>
 			<?php
@@ -381,6 +396,11 @@ function modal_dialog_init($manualdisplay = false)
 	}	
 }
 
+function modal_dialog_admin_init()
+{
+	wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/jquery.cookie.js", "", "1.0");
+}
+
 $version = "1.0";
 
 // adds the menu item to the admin interface
@@ -389,6 +409,7 @@ add_action('admin_menu', array('MD_Admin','add_config_page'));
 add_action('wp_footer', 'modal_dialog_footer');
 add_action('wp_head', 'modal_dialog_header');
 add_action('init', 'modal_dialog_init');
+add_action('admin_init', 'modal_dialog_admin_init');
 
 $options  = get_option('MD_PP');
 
