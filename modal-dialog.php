@@ -2,7 +2,7 @@
 /*Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 1.2.3
+Version: 2.0
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -21,17 +21,75 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software    
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA*/
 
-if (is_file(trailingslashit(ABSPATH.PLUGINDIR).'modal-dialog.php')) {
-	define('MD_FILE', trailingslashit(ABSPATH.PLUGINDIR).'modal-dialog.php');
-}
-else if (is_file(trailingslashit(ABSPATH.PLUGINDIR).'modal-dialog/modal-dialog.php')) {
-	define('MD_FILE', trailingslashit(ABSPATH.PLUGINDIR).'modal-dialog/modal-dialog.php');
-}
+define('MODAL_DIALOG_ADMIN_PAGE_NAME', 'modal-dialog');
 
-function modal_dialog_install() {
-	$options  = get_option('MD_PP');
+define('MDDIR', dirname(__FILE__) . '/');
 
-	if ($options == false) {
+//class that reperesent the complete plugin
+class modal_dialog_plugin {
+
+	//constructor of class, PHP4 compatible construction for backward compatibility
+	function modal_dialog_plugin() {
+
+		$this->mdpluginpath = WP_CONTENT_URL.'/plugins/'.plugin_basename(dirname(__FILE__)).'/';
+		
+		load_plugin_textdomain( 'modal-dialog', $this->mdpluginpath . '/languages', 'modal-dialog/languages');
+
+		$options = get_option('MD_PP');
+		$genoptions = get_option('MD_General');
+		
+		if ($genoptions == false) {
+			$this->md_install();
+		}
+
+		//add filter for WordPress 2.8 changed backend box system !
+		add_filter('screen_layout_columns', array($this, 'on_screen_layout_columns'), 10, 1);
+		//register callback for admin menu  setup
+		add_action('admin_menu', array($this, 'on_admin_menu')); 
+		//register the callback been used if options of page been submitted and needs to be processed
+		add_action('admin_post_save_modal_dialog_general', array($this, 'on_save_changes_general'));
+		add_action('admin_post_save_modal_dialog_configurations', array($this, 'on_save_changes_configurations'));
+		
+		// Add addition section to Link Edition page
+		add_meta_box ('modaldialog_meta_box', __('Modal Dialog', 'modal-dialog'), array($this, 'md_link_edit_extra'), 'post', 'normal', 'high');
+		add_meta_box ('modaldialog_meta_box', __('Modal Dialog', 'modal-dialog'), array($this, 'md_link_edit_extra'), 'page', 'normal', 'high');
+		
+		add_action('edit_post', array($this, 'md_editsave_post_field'));
+		add_action('save_post', array($this, 'md_editsave_post_field'));
+		
+		if (($options['active'] == true || $manualdisplay) && !is_admin())
+		{
+			wp_enqueue_script('jquery');
+			wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.pack.js", "", "1.3.1");
+			wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/jquery.cookie.js", "", "1.0");
+		}
+		elseif (is_admin())
+		{
+			wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/jquery.cookie.js", "", "1.0");
+		}
+	
+		add_action('wp_footer', array($this, 'modal_dialog_footer'));
+		add_action('wp_head', array($this, 'modal_dialog_header'));
+		
+		register_activation_hook(__FILE__, array($this, 'md_install'));
+		register_deactivation_hook(__FILE__, array($this, 'md_uninstall'));
+	}
+	
+	//for WordPress 2.8 we have to tell, that we support 2 columns !
+	function on_screen_layout_columns($columns, $screen) {
+		if ($screen == $this->pagehooktop) {
+			$columns[$this->pagehooktop] = 1;
+		}
+		elseif ($screen == $this->pagehooksettings) {
+			$columns[$this->pagehooksettings] = 1;
+		}
+
+		return $columns;
+	}
+	
+	function modal_dialog_default_config($confignumber) {
+	
+		$options['dialogname'] = 'Default';
 		$options['contentlocation'] = "URL";
 		$options['dialogtext'] = "Example Dialog Text";
 		$options['active'] = true;
@@ -49,7 +107,12 @@ function modal_dialog_install() {
 		$options['exitmethod'] = 'onlyexitbutton';
 		$options['autosize'] = false;
 		$options['showfrontpage'] = false;
-		$options['forcepagelist'] = false;
+		
+		if ($confignumber == 1)
+			$options['forcepagelist'] = false;
+		elseif ($confignumber > 1)
+			$options['forcepagelist'] = true;
+			
 		$options['sessioncookiename'] = 'modal-dialog-session';
 		$options['oncepersession'] = false;
 		$options['hideclosebutton'] = false;
@@ -58,137 +121,323 @@ function modal_dialog_install() {
 		$options['overlayopacity'] = '0.3';
 		$options['autoclose'] = false;
 		$options['autoclosetime'] = 5000;
-		
-		update_option('MD_PP',$options);
+	
+		$configname = "MD_PP" . $confignumber;
+		update_option($configname, $options);
 	}
-}
-register_activation_hook(MD_FILE, 'modal_dialog_install');
 
+	function md_install() {
+		$options = get_option('MD_PP1');
 
-
-if ( ! class_exists( 'MD_Admin' ) ) {
-	class MD_Admin {		
-		function add_config_page() {
-			global $wpdb;
-			if ( function_exists('add_submenu_page') ) {
-				add_options_page('Modal Dialog for Wordpress', 'Modal Dialog', 9, basename(__FILE__), array('MD_Admin','config_page'));
-				add_filter( 'plugin_action_links', array( 'MD_Admin', 'filter_plugin_actions'), 10, 2 );
+		if ($options == false) {
+			$oldoptions = get_option('MD_PP');
+			
+			if ($oldoptions != false)
+			{
+				$oldoptions['dialogname'] = 'Default';
+				update_option('MD_PP1', $oldoptions);
+			}			
+			else
+			{
+				$this->modal_dialog_default_config(1);
 			}
-		} // end add_MD_config_page()
+		}
+		
+		$genoptions = get_option('MD_General');
+		
+		if ($genoptions == false) {
+			$genoptions['numberofmodaldialogs'] = 1;
+			$genoptions['primarydialog'] = 1;
+			
+			update_option('MD_General', $genoptions);
+		}
+	}
+	
+	function md_uninstall() {
+	}
+		
+	function remove_querystring_var($url, $key) { 
+		$keypos = strpos($url, $key);
+		if ($keypos)
+		{
+			$ampersandpos = strpos($url, '&', $keypos);
+			$newurl = substr($url, 0, $keypos - 1);
+			
+			if ($ampersandpos)
+				$newurl .= substr($url, $ampersandpos);
+		}
+		else
+			$newurl = $url;
+		
+		return $newurl; 
+	}
 
-		function filter_plugin_actions( $links, $file ){
-			//Static so we don't call plugin_basename on every plugin row.
-			static $this_plugin;
-			if ( ! $this_plugin ) $this_plugin = plugin_basename(__FILE__);
-			if ( $file == $this_plugin ){
-				$settings_link = '<a href="options-general.php?page=modal-dialog.php">' . __('Settings') . '</a>';
-				
-				array_unshift( $links, $settings_link ); // before other links
+	//extend the admin menu
+	function on_admin_menu() {
+		//add our own option page, you can also add it to different sections or use your own one
+		$this->pagehooktop = add_menu_page(__('Modal Dialog General Options', 'modal-dialog'), "Modal Dialog", 'manage_options', MODAL_DIALOG_ADMIN_PAGE_NAME, array($this, 'on_show_page'), $this->mdpluginpath . '/icons/ModalDialog16.png');
+		$this->pagehooksettings = add_submenu_page( MODAL_DIALOG_ADMIN_PAGE_NAME, __('Modal Dialog - Configurations', 'community-events') , __('Configurations', 'modal-dialog'), 'manage_options', 'modal-dialog-configurations', array($this,'on_show_page'));
+		
+		//register  callback gets call prior your own page gets rendered
+		add_action('load-'.$this->pagehooktop, array(&$this, 'on_load_page'));
+		add_action('load-'.$this->pagehooksettings, array(&$this, 'on_load_page'));
+	}
+	
+	//will be executed if wordpress core detects this page has to be rendered
+	function on_load_page() {
+		//ensure, that the needed javascripts been loaded to allow drag/drop, expand/collapse and hide/show of boxes
+		wp_enqueue_script('common');
+		wp_enqueue_script('wp-lists');
+		wp_enqueue_script('postbox');		
+
+		//add several metaboxes now, all metaboxes registered during load page can be switched off/on at "Screen Options" automatically, nothing special to do therefore
+		add_meta_box('modaldialog_general_meta_box', __('General Configuration', 'modal-dialog'), array($this, 'general_config_meta_box'), $this->pagehooktop, 'normal', 'high');
+		add_meta_box('modaldialog_general_save_meta_box', __('Save General Configuration', 'modal-dialog'), array($this, 'general_save_meta_box'), $this->pagehooktop, 'normal', 'high');
+
+		add_meta_box('modaldialog_dialog_config_selection_meta_box', __('Modal Dialog Selection', 'modal-dialog'), array($this, 'dialog_config_selection_meta_box'), $this->pagehooksettings, 'normal', 'high');		
+		add_meta_box('modaldialog_dialog_config_meta_box', __('General Configuration', 'modal-dialog'), array($this, 'dialog_config_meta_box'), $this->pagehooksettings, 'normal', 'high');
+		add_meta_box('modaldialog_dialog_config_save_meta_box', __('Save', 'modal-dialog'), array($this, 'dialog_config_save_meta_box'), $this->pagehooksettings, 'normal', 'high');
+
+	}
+
+	//executed to show the plugins complete admin page
+	function on_show_page() {
+		//we need the global screen column value to beable to have a sidebar in WordPress 2.8
+		global $screen_layout_columns;
+		global $wpdb;
+		
+		$genoptions = get_option('MD_General');	
+		
+		if ( isset($_GET['config']) && $config == '') {
+			$config = $_GET['config'];
+			
+			if ($config > $genoptions['numberofmodaldialogs'])
+			{
+				$config = 1;
 			}
-			return $links;
+		}
+		else
+		{
+			$config = 1;
 		}
 
-		function config_page() {
-			global $dlextensions;
-			global $wpdb;
-			
-			$adminpage == "";
+		if ($_GET['page'] == 'modal-dialog')
+		{
+			$pagetitle = __('Modal Dialog General Settings', 'modal-dialog');
+			$formvalue = 'save_modal_dialog_general';
 
-			if ( isset($_GET['reset']) && $_GET['reset'] == "true") {
-				$options['contentlocation'] = "URL";
-				$options['dialogtext'] = "Example Dialog Text";
-				$options['active'] = true;
-				$options['cookieduration'] = 365;
-				$options['contenturl'] = "http://www.google.com";
-				$options['pages'] = "";
-				$options['overlaycolor'] = "#00CC00";
-				$options['textcolor'] = "#000000";
-				$options['backgroundcolor'] = "#FFFFFF";
-				$options['delay'] = 2000;
-				$options['dialogwidth'] = 900;
-				$options['dialogheight'] = 700;
-				$options['cookiename'] = 'modal-dialog';
-				$options['numberoftimes'] = 1;
-				$options['exitmethod'] = 'onlyexitbutton';
-				$options['autosize'] = false;
-				$options['showfrontpage'] = false;
-				$options['forcepagelist'] = false;	
-				$options['sessioncookiename'] = 'modal-dialog-session';
-				$options['oncepersession'] = false;
-				$options['hideclosebutton'] = false;
-				$options['centeronscroll'] = false;
-				$options['manualcookiecreation'] = false;
-				$options['overlayopacity'] = '0.3';
-				$options['autoclose'] = false;
-				$options['autoclosetime'] = 5000;
+			if ($_GET['message'] == '1')
+				echo '<div id="message" class="updated fade"><p><strong>' . __('Modal Dialog General Settings Updated', 'modal-dialog') . '</strong></div>';
+		}
+		elseif ($_GET['page'] == 'modal-dialog-configurations')
+		{
+			$pagetitle = __('Modal Dialog Configurations', 'modal-dialog');
+			$formvalue = 'save_modal_dialog_configurations';
+
+			if ($_GET['message'] == '1')
+				echo '<div id="message" class="updated fade"><p><strong>' . __('Modal Dialog Configuration Updated', 'modal-dialog') . ' (#' . $config . ')</strong></div>';
+		}
 		
-				update_option('MD_PP',$options);
-			}
-			if ( isset($_POST['submit']) ) {
-				if (!current_user_can('manage_options')) die(__('You cannot edit the Modal Dialog for WordPress options.'));
-				check_admin_referer('mdpp-config');
-				
-				foreach (array('dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
-						'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'sessioncookiename', 'overlayopacity',
-						'autoclosetime') as $option_name) {
-						if (isset($_POST[$option_name])) {
-							$options[$option_name] = $_POST[$option_name];
-						}
-					}
-					
-				foreach (array('active') as $option_name) {
-					if (isset($_POST[$option_name]) && $_POST[$option_name] == "True") {
-						$options[$option_name] = true;
-					} elseif (isset($_POST[$option_name]) && $_POST[$option_name] == "False") {
-						$options[$option_name] = false;
-					}
+		$configname = 'MD_PP' . $config;
+		$options = get_option($configname);
+		
+		if ($options == false)
+		{
+			$this->modal_dialog_default_config($config);
+			$options = get_option($configname);
+		}		
+
+		//define some data can be given to each metabox during rendering
+		$data['options'] = $options;
+		$data['config'] = $config;
+		$data['genoptions'] = $genoptions;
+		$data['mode'] = $mode;
+		$data['selectedcat'] = $selectedcat;
+		$data['selectedvenue'] = $selectedvenue;
+		$data['selectedevent'] = $selectedevent;
+		?>
+		<div id="modal-dialog-general" class="wrap">
+		<div class='icon32'><img src="<?php echo $this->mdpluginpath . '/icons/ModalDialog32.png'; ?>" /></div>
+		<h2><?php echo $pagetitle; ?><span style='padding-left: 50px'><a href="http://yannickcorner.nayanna.biz/wordpress-plugins/modal-dialog/" target="linklibrary"><img src="<?php echo $this->mdpluginpath; ?>/icons/btn_donate_LG.gif" /></a></span></h2>
+		<form action="admin-post.php" method="post" id='mdform' enctype='multipart/form-data'>
+			<?php wp_nonce_field('modal-dialog-general'); ?>
+			<?php wp_nonce_field('closedpostboxes', 'closedpostboxesnonce', false ); ?>
+			<?php wp_nonce_field('meta-box-order', 'meta-box-order-nonce', false ); ?>
+			<input type="hidden" name="action" value="<?php echo $formvalue; ?>" />
+		
+			<div id="poststuff" class="metabox-holder<?php echo 2 == $screen_layout_columns ? ' has-right-sidebar' : ''; ?>">
+				<div id="post-body" class="has-sidebar">
+					<div id="post-body-content" class="has-sidebar-content">
+						<?php 
+							if ($_GET['page'] == 'modal-dialog')
+								do_meta_boxes($this->pagehooktop, 'normal', $data); 
+							elseif ($_GET['page'] == 'modal-dialog-configurations')
+								do_meta_boxes($this->pagehooksettings, 'normal', $data); 
+
+						?>
+					</div>
+				</div>
+				<br class="clear"/>
+								
+			</div>	
+		</form>
+		</div>
+	<script type="text/javascript">
+		//<![CDATA[
+		jQuery(document).ready( function($) {
+			// close postboxes that should be closed
+			$('.if-js-closed').removeClass('if-js-closed').addClass('closed');
+			// postboxes setup
+			postboxes.add_postbox_toggles('<?php echo $this->pagehook; ?>');
+		});
+		//]]>
+	</script>
+		
+		<?php
+	}
+	
+		//executed if the post arrives initiated by pressing the submit button of form
+	function on_save_changes_general() {
+		//user permission check
+		if ( !current_user_can('manage_options') )
+			wp_die( __('Cheatin&#8217; uh?') );			
+		//cross check the given referer
+		check_admin_referer('modal-dialog-general');
+		
+		$options = get_option('MD_General');
+		
+		foreach (array('numberofmodaldialogs', 'primarydialog') as $option_name) {
+				if (isset($_POST[$option_name])) {
+					$options[$option_name] = $_POST[$option_name];
 				}
-				
-				foreach (array('autosize', 'showfrontpage', 'forcepagelist', 'oncepersession', 'hideclosebutton', 'centeronscroll', 'manualcookiecreation',
-								'autoclose') as $option_name) {
-					if (isset($_POST[$option_name])) {
-						$options[$option_name] = true;
-					} else {
-						$options[$option_name] = false;
-					}
-				}
-					
-				update_option('MD_PP', $options);
-				
-				echo '<div id="message" class="updated fade"><p><strong>Modal Dialog Settings Updated</strong></div>';
 			}
 			
-			$mdpluginpath = WP_CONTENT_URL.'/plugins/'.plugin_basename(dirname(__FILE__)).'/';
+		foreach (array() as $option_name) {
+			if (isset($_POST[$option_name]) && $_POST[$option_name] == "True") {
+				$options[$option_name] = true;
+			} elseif (isset($_POST[$option_name]) && $_POST[$option_name] == "False") {
+				$options[$option_name] = false;
+			}
+		}
+		
+		foreach (array() as $option_name) {
+			if (isset($_POST[$option_name])) {
+				$options[$option_name] = true;
+			} else {
+				$options[$option_name] = false;
+			}
+		}
+			
+		update_option('MD_General', $options);
+		
+		//lets redirect the post request into get request (you may add additional params at the url, if you need to show save results
+		wp_redirect($this->remove_querystring_var($_POST['_wp_http_referer'], 'message') . "&message=1");
+	}
 
-			$options  = get_option('MD_PP');
-			?>
-			<div class="wrap" style="width: 1000px">
-				<h2>Modal Dialog Configuration</h2>		
-				<?php if (($adminpage == "") || ($adminpage == "general")): ?>
-				<form name="dmadminform" action="" method="post" id="dm-config">
+	//executed if the post arrives initiated by pressing the submit button of form
+	function on_save_changes_configurations() {
+		//user permission check
+		if ( !current_user_can('manage_options') )
+			wp_die( __('Cheatin&#8217; uh?') );			
+		//cross check the given referer
+		check_admin_referer('modal-dialog-general');
+		
+		if (isset($_POST['configid']))
+		{
+			$configid = $_POST['configid'];
+		}
+		else
+		{
+			$configid = 1;
+		}
+		
+		$configname = 'MD_PP' . $configid;
+		$options = get_option($configname);
 				
+		foreach (array('dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
+				'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'sessioncookiename', 'overlayopacity',
+				'autoclosetime', 'dialogname') as $option_name) {
+				if (isset($_POST[$option_name])) {
+					$options[$option_name] = $_POST[$option_name];
+				}
+			}
+			
+		foreach (array('active') as $option_name) {
+			if (isset($_POST[$option_name]) && $_POST[$option_name] == "True") {
+				$options[$option_name] = true;
+			} elseif (isset($_POST[$option_name]) && $_POST[$option_name] == "False") {
+				$options[$option_name] = false;
+			}
+		}
+		
+		foreach (array('autosize', 'showfrontpage', 'forcepagelist', 'oncepersession', 'hideclosebutton', 'centeronscroll', 'manualcookiecreation',
+						'autoclose') as $option_name) {
+			if (isset($_POST[$option_name])) {
+				$options[$option_name] = true;
+			} else {
+				$options[$option_name] = false;
+			}
+		}
+			
+		update_option($configname, $options);
+		
+		//lets redirect the post request into get request (you may add additional params at the url, if you need to show save results
+		wp_redirect($this->remove_querystring_var($_POST['_wp_http_referer'], 'message') . "&message=1&config=" . $configid);
+	}
+	
+	function general_config_meta_box($data) { 
+		$genoptions = $data['genoptions'];
+	?>
+	
+	<table>
+		<tr>
+			<td>Number of Modal Dialogs</td>
+			<td><input type="text" id="numberofmodaldialogs" name="numberofmodaldialogs" size="5" value="<?php echo $genoptions['numberofmodaldialogs']; ?>"/></td>
+		</tr>
+	</table>
+	
+	<?php }
+	
+	function general_save_meta_box($data) { 
+	?>
+		<div class="submitbox">
+			<input type="submit" name="submit" class="button-primary" value="<?php _e('Save Settings','modal-dialog'); ?>" />
+		</div>
+	
+	<?php }
+	
+	function dialog_config_selection_meta_box($data) { 
+		$genoptions = $data['genoptions'];
+		$config = $data['config'];
+	?>
+	
+		<?php _e('Select Current Dialog Configuration', 'modal-dialog'); ?> : 
+		<SELECT id="configlist" name="configlist" style='width: 300px'>
+		<?php if ($genoptions['numberofmodaldialogs'] == '') $numberofdialogs = 1; else $numberofdialogs = $genoptions['numberofmodaldialogs'];
+			for ($counter = 1; $counter <= $numberofdialogs; $counter++): ?>
+				<?php $tempoptionname = "MD_PP" . $counter;
+				   $tempoptions = get_option($tempoptionname); ?>
+				   <option value="<?php echo $counter ?>" <?php if ($config == $counter) echo 'SELECTED';?>><?php if ($counter == 1) _e('Primary ', 'modal-dialog'); ?><?php _e('Dialog', 'modal-dialog'); ?> <?php echo $counter ?><?php if ($tempoptions != "") echo " (" . $tempoptions['dialogname'] . ")"; ?></option>
+			<?php endfor; ?>
+		</SELECT>
+		<INPUT type="button" name="go" value="<?php _e('Make Current', 'modal-dialog'); ?>!" onClick="window.location= 'admin.php?page=modal-dialog-configurations&amp;config=' + jQuery('#configlist').val()">
+	
+	<?php }
+		
+	function dialog_config_meta_box($data) { 
+		$options = $data['options'];
+		$config = $data['config'];
+	?>
+			<input type='hidden' value='<?php echo $config; ?>' name='configid' id='configid' />
+			<table style='width: 100%'>
+			<td style='vertical-align: top'>
 				<table>
-				<tr>
-				<td style='vertical-align: top; padding: 10px; border: 1px solid #cccccc'>
-					<h3>If you like this plugin:</h3>
-					<ul style="list-style-type: circle;padding-left: 10px">
-					<li><a style='text-decoration: none; ' href="http://yannickcorner.nayanna.biz/wordpress-plugins/modal-dialog/"><img src="<?php echo $mdpluginpath . "icons/btn_donate_LG.gif"; ?>" /> to help support new features and updates</a></li>
-					<li>Give it a good rating on the <a href="http://wordpress.org/extend/plugins/modal-dialog/">Wordpress Plugins site</a></li>
-					</ul>
-				</td>
-				<td style='vertical-align: top; padding: 10px; border: 1px solid #cccccc'>
-					<div><h3>ThemeFuse Original WP Themes</h3>If you are looking to buy an original WP theme, take a look at <a href="https://www.e-junkie.com/ecom/gb.php?cl=136641&c=ib&aff=153522" target="ejejcsingle">ThemeFuse</a><br />They have a nice 1-click installer, great support and good-looking themes.</div><div style='text-align: center; padding-top: 10px'><a href="https://www.e-junkie.com/ecom/gb.php?cl=136641&c=ib&aff=153522" target="ejejcsingle"><img src='http://themefuse.com/wp-content/themes/themefuse/images/campaigns/themefuse.jpg' /></a></div>
-					</fieldset>
-				</td>
-				</tr>
-				</table>
-				<?php
-					if ( function_exists('wp_nonce_field') )
-						wp_nonce_field('mdpp-config');
-					?>
-					<table style='width: 100%'>
 					<tr>
-						<td style='width: 200px'>Activate</td>
+						<td style='width: 200px;'>Dialog Name</td>
+						<td><input type="text" id="dialogname" name="dialogname" size="40" value="<?php echo $options['dialogname']; ?>"/></td>
+					</tr>
+					<tr>
+						<td style='width: 200px;'>Activate</td>
 						<td>
 							<select name="active" id="active" style="width:250px;">
 								<option value="True"<?php if ($options['active'] == true) { echo ' selected="selected"';} ?>>Yes</option>
@@ -211,148 +460,222 @@ if ( ! class_exists( 'MD_Admin' ) ) {
 					</tr>
 					<tr>
 						<td>Web Site Address</td>
-						<td colspan=3><input type="text" id="contenturl" name="contenturl" size="120" value="<?php echo $options['contenturl']; ?>"/></td>
+						<td colspan=3><input type="text" id="contenturl" name="contenturl" size="40" value="<?php echo $options['contenturl']; ?>"/></td>
 					</tr>
-					<tr>
-						<td style='vertical-align: top; width: 150px'>Dialog Contents</td>
-						<td colspan=3><TEXTAREA id="dialogtext" NAME="dialogtext" COLS=100 ROWS=10><?php echo wp_specialchars(stripslashes($options['dialogtext'])); ?></TEXTAREA>
-						</td>
-					</tr>
-					<tr>
-						<td>Number of days until cookie expiration</td>
-						<td><input type="text" id="cookieduration" name="cookieduration" size="4" value="<?php echo $options['cookieduration']; ?>"/></td>
-						<td style="width: 200px">Number of times to display modal dialog</td>
-						<td><input type="text" id="numberoftimes" name="numberoftimes" size="4" value="<?php echo $options['numberoftimes']; ?>"/></td>
-					</tr>
-					<tr>
-						<td>Cookie Name</td>
-						<td><input type="text" id="cookiename" name="cookiename" size="30" value="<?php echo $options['cookiename']; ?>"/></td>
-						<td>Dialog Exit Method</td>
-						<td>
-							<select name="exitmethod" id="exitmethod" style="width:100px;">
-								<option value="onlyexitbutton"<?php if ($options['exitmethod'] == 'onlyexitbutton') { echo ' selected="selected"';} ?>>Only Close Button</option>
-								<option value="anywhere"<?php if ($options['exitmethod'] == 'anywhere') { echo ' selected="selected"';} ?>>Anywhere</option>
-							</select>
-						</td>
-					</tr>
-					<tr>
-						<td>Show once per session</td>
-						<td><input type="checkbox" id="oncepersession" name="oncepersession" <?php if ($options['oncepersession']) echo ' checked="checked" '; ?>/></td>										
-						<td>Session Cookie Name</td>
-						<td><input type="text" id="sessioncookiename" name="sessioncookiename" size="30" value="<?php if ($options['sessioncookiename'] != '') echo $options['sessioncookiename']; else echo 'modal-dialog-session'; ?>"/></td>						
-					</tr>
-					<tr>
-						<td>Set display cookies manually</td>
-						<td><input type="checkbox" id="manualcookiecreation" name="manualcookiecreation" <?php if ($options['manualcookiecreation']) echo ' checked="checked" '; ?>/></td>										
-						<td></td>
-						<td><input type="button" id="deletecookies" name="deletecookies" value="Delete All Cookies" /></td>
-					</tr>
-					<tr>
-						<td>Hide Close Button</td>
-						<td><input type="checkbox" id="hideclosebutton" name="hideclosebutton" <?php if ($options['hideclosebutton']) echo ' checked="checked" '; ?>/></td>
-						<td>Center on scroll</td>
-						<td><input type="checkbox" id="centeronscroll" name="centeronscroll" <?php if ($options['centeronscroll']) echo ' checked="checked" '; ?>/></td>
-					</tr>
-					<tr>
-						<td>Auto-Size Dialog</td>
-						<td><input type="checkbox" id="autosize" name="autosize" <?php if ($options['autosize']) echo ' checked="checked" '; ?>/></td>
-					</tr>
-					<tr>
-						<td>Dialog Width</td>
-						<td><input type="text" id="dialogwidth" name="dialogwidth" size="4" value="<?php echo $options['dialogwidth']; ?>"/></td>
-						<td>Dialog Height</td>
-						<td><input type="text" id="dialogheight" name="dialogheight" size="4" value="<?php echo $options['dialogheight']; ?>"/></td>
-					</tr>
-					<tr>
-						<td>Auto-Close Dialog</td>
-						<td><input type="checkbox" id="autoclose" name="autoclose" <?php if ($options['autoclose']) echo ' checked="checked" '; ?>/></td>
-						<td>Auto-Close Time (in ms)</td>
-						<td><input type="text" id="autoclosetime" name="autoclosetime" size="8" value="<?php echo $options['autoclosetime']; ?>"/></td>						
-					</tr>
-					<tr>
-						<td>Only show on specific pages and single posts</td>
-						<td><input type="checkbox" id="forcepagelist" name="forcepagelist" <?php if ($options['forcepagelist'] == true) echo ' checked="checked" '; ?>/></td>
-						<td>Display on front page</td>
-						<td><input type="checkbox" id="showfrontpage" name="showfrontpage" <?php if ($options['showfrontpage'] == true) echo ' checked="checked" '; ?>/></td>
-					</tr>
-					<tr>
-						<td>Pages and posts to display Modal Dialog (empty for all, comma-separated IDs)</td>
-						<td colspan=3><input type="text" id="pages" name="pages" size="120" value="<?php echo $options['pages']; ?>"/></td>
-					</tr>
-					<tr>
-						<td>Overlay Color</td>
-						<td><input type="text" id="overlaycolor" name="overlaycolor" size="8" value="<?php echo $options['overlaycolor']; ?>"/></td>
-						<td>Overlay Opacity (0 to 1)</td>
-						<td><input type="text" id="overlayopacity" name="overlayopacity" size="8" value="<?php if ($options['overlayopacity'] == '') echo '0.3'; else echo $options['overlayopacity']; ?>"/></td>
-					</tr>
-					<tr>
-						<td>Text Color (not used with web site address)</td>
-						<td><input type="text" id="textcolor" name="textcolor" size="8" value="<?php echo $options['textcolor']; ?>"/></td>
-						<td>Background Color</td>
-						<td><input type="text" id="backgroundcolor" name="backgroundcolor" size="8" value="<?php echo $options['backgroundcolor']; ?>"/></td>
-						
-					</tr>
-					</table>
-					<p style="border:0;" class="submit"><input type="submit" name="submit" value="Update Settings &raquo;" /></p>
-				</form>
+				</table>
+			</td>
+			<td style='padding: 8px; border: 1px solid #cccccc;'>
+			<div><h3>ThemeFuse Original WP Themes</h3><br />If you are looking to buy an original WP theme, take a look at <a href="https://www.e-junkie.com/ecom/gb.php?cl=136641&c=ib&aff=153522" target="ejejcsingle">ThemeFuse</a><br />They have a nice 1-click installer, great support and good-looking themes.</div><div style='text-align: center; padding-top: 10px'><a href="https://www.e-junkie.com/ecom/gb.php?cl=136641&c=ib&aff=153522" target="ejejcsingle"><img src='http://themefuse.com/wp-content/themes/themefuse/images/campaigns/themefuse.jpg' /></a></div>
+			</td>
+			</table>
+			<table>
+			<tr>
+				<td style='vertical-align: top; width: 150px'>Dialog Contents</td>
+				<td colspan=3><TEXTAREA id="dialogtext" NAME="dialogtext" COLS=100 ROWS=10><?php echo wp_specialchars(stripslashes($options['dialogtext'])); ?></TEXTAREA>
+				</td>
+			</tr>
+			<tr>
+				<td>Number of days until cookie expiration</td>
+				<td><input type="text" id="cookieduration" name="cookieduration" size="4" value="<?php echo $options['cookieduration']; ?>"/></td>
+				<td style="width: 200px">Number of times to display modal dialog</td>
+				<td><input type="text" id="numberoftimes" name="numberoftimes" size="4" value="<?php echo $options['numberoftimes']; ?>"/></td>
+			</tr>
+			<tr>
+				<td>Cookie Name</td>
+				<td><input type="text" id="cookiename" name="cookiename" size="30" value="<?php echo $options['cookiename']; ?>"/></td>
+				<td>Dialog Exit Method</td>
+				<td>
+					<select name="exitmethod" id="exitmethod" style="width:100px;">
+						<option value="onlyexitbutton"<?php if ($options['exitmethod'] == 'onlyexitbutton') { echo ' selected="selected"';} ?>>Only Close Button</option>
+						<option value="anywhere"<?php if ($options['exitmethod'] == 'anywhere') { echo ' selected="selected"';} ?>>Anywhere</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>Show once per session</td>
+				<td><input type="checkbox" id="oncepersession" name="oncepersession" <?php if ($options['oncepersession']) echo ' checked="checked" '; ?>/></td>										
+				<td>Session Cookie Name</td>
+				<td><input type="text" id="sessioncookiename" name="sessioncookiename" size="30" value="<?php if ($options['sessioncookiename'] != '') echo $options['sessioncookiename']; else echo 'modal-dialog-session'; ?>"/></td>						
+			</tr>
+			<tr>
+				<td>Set display cookies manually</td>
+				<td><input type="checkbox" id="manualcookiecreation" name="manualcookiecreation" <?php if ($options['manualcookiecreation']) echo ' checked="checked" '; ?>/></td>										
+				<td></td>
+				<td><input type="button" id="deletecookies" name="deletecookies" value="Delete All Cookies" /></td>
+			</tr>
+			<tr>
+				<td>Hide Close Button</td>
+				<td><input type="checkbox" id="hideclosebutton" name="hideclosebutton" <?php if ($options['hideclosebutton']) echo ' checked="checked" '; ?>/></td>
+				<td>Center on scroll</td>
+				<td><input type="checkbox" id="centeronscroll" name="centeronscroll" <?php if ($options['centeronscroll']) echo ' checked="checked" '; ?>/></td>
+			</tr>
+			<tr>
+				<td>Auto-Size Dialog</td>
+				<td><input type="checkbox" id="autosize" name="autosize" <?php if ($options['autosize']) echo ' checked="checked" '; ?>/></td>
+			</tr>
+			<tr>
+				<td>Dialog Width</td>
+				<td><input type="text" id="dialogwidth" name="dialogwidth" size="4" value="<?php echo $options['dialogwidth']; ?>"/></td>
+				<td>Dialog Height</td>
+				<td><input type="text" id="dialogheight" name="dialogheight" size="4" value="<?php echo $options['dialogheight']; ?>"/></td>
+			</tr>
+			<tr>
+				<td>Auto-Close Dialog</td>
+				<td><input type="checkbox" id="autoclose" name="autoclose" <?php if ($options['autoclose']) echo ' checked="checked" '; ?>/></td>
+				<td>Auto-Close Time (in ms)</td>
+				<td><input type="text" id="autoclosetime" name="autoclosetime" size="8" value="<?php echo $options['autoclosetime']; ?>"/></td>						
+			</tr>
+			<tr>
+				<td>Only show on specific pages and single posts</td>
+				<td><input type="checkbox" <?php if ($config > 1) echo "DISABLED"; ?> id="forcepagelist" name="forcepagelist" <?php if ($options['forcepagelist'] == true) echo ' checked="checked" '; ?>/></td>
+				<td>Display on front page</td>
+				<td><input type="checkbox" id="showfrontpage" name="showfrontpage" <?php if ($options['showfrontpage'] == true) echo ' checked="checked" '; ?>/></td>
+			</tr>
+			<tr>
+				<td>Pages and posts to display Modal Dialog (empty for all, comma-separated IDs)</td>
+				<td colspan=3><input type="text" id="pages" name="pages" size="120" value="<?php echo $options['pages']; ?>"/></td>
+			</tr>
+			<tr>
+				<td>Overlay Color</td>
+				<td><input type="text" id="overlaycolor" name="overlaycolor" size="8" value="<?php echo $options['overlaycolor']; ?>"/></td>
+				<td>Overlay Opacity (0 to 1)</td>
+				<td><input type="text" id="overlayopacity" name="overlayopacity" size="8" value="<?php if ($options['overlayopacity'] == '') echo '0.3'; else echo $options['overlayopacity']; ?>"/></td>
+			</tr>
+			<tr>
+				<td>Text Color (not used with web site address)</td>
+				<td><input type="text" id="textcolor" name="textcolor" size="8" value="<?php echo $options['textcolor']; ?>"/></td>
+				<td>Background Color</td>
+				<td><input type="text" id="backgroundcolor" name="backgroundcolor" size="8" value="<?php echo $options['backgroundcolor']; ?>"/></td>
 				
-				<script type="text/javascript">
-					jQuery(document).ready(function() {
-						jQuery("#deletecookies").click(function() {
-							jQuery.cookie(jQuery("#cookiename").val(), null, { path: '/' });
-							jQuery.cookie(jQuery("#sessioncookiename").val(), null, { path: '/' });
-							alert("Deleted all cookies");
-						});
+			</tr>
+			</table>
+				
+			<script type="text/javascript">
+				jQuery(document).ready(function() {
+					jQuery("#deletecookies").click(function() {
+						jQuery.cookie(jQuery("#cookiename").val(), null, { path: '/' });
+						jQuery.cookie(jQuery("#sessioncookiename").val(), null, { path: '/' });
+						alert("Deleted all cookies");
 					});
-				</script>
-					
-				
-				
-				<?php endif; ?>				
-			</div>
-			<?php
-		} // end config_page()
-
-		function restore_defaults() {
-			update_option('MD_PP',$options);
-		}
-	} // end class MD_Admin
-} //endif
-
-
-function modal_dialog_header($manualdisplay = false) {
-
-	$options = get_option('MD_PP');
+				});
+			</script>
+	<?php }
+		
+	function dialog_config_save_meta_box($data) {
+		$options = $data['options'];
+		?>
+		<div class="submitbox">
+			<input type="submit" name="submit" class="button-primary" value="<?php _e('Save Settings','modal-dialog'); ?>" />
+		</div>
 	
-	if (($options['active'] || $manualdisplay) && !is_admin())
-	{
-		if ($options['forcepagelist'] == false)
-			$display = true;
-		elseif ($options['showfrontpage'])
+	<?php }
+	
+	function md_link_edit_extra($post) {
+		global $wpdb;
+
+		$genoptions = get_option('MD_General');
+
+		if ($post->ID != '')
 		{
-			if (is_front_page())
-				$display = true;		
-			else
-				$display = false;
-		}			
-		elseif ($options['forcepagelist'] == true)
-		{
-			$pagelist = explode(',', $options['pages']);
-			
-			if ($pagelist)		
-				foreach ($pagelist as $pageid)
-				{
-					if ( is_page(intval($pageid)) || is_single($pageid) )
-					{
-						$display = true;
-						break;
-					}
-					else
-						$display = false;
-				}
+			$dialogid = get_post_meta($post->ID, "modal-dialog-id", true);
+			if ($dialogid == "") $dialogid = 0;
 		}
 		else
-			$display = true;		
+		{
+			$dialogid = 0;
+		}
+	?>
+		<table>
+			<tr>
+				<td colspan="2">Setting a dialog here will take priority over any other dialog specified under the Modal Dialog Settings page.</td>
+			</tr>
+			<tr>
+				<td style='width: 200px'><?php _e('Modal Display to Display', 'modal-dialog'); ?></td>
+				<td>
+				<SELECT id="dialogid" name="dialogid" style='width: 300px'>
+						<option value="0">None</option>
+				<?php if ($genoptions['numberofmodaldialogs'] == '') $numberofdialogs = 1; else $numberofdialogs = $genoptions['numberofmodaldialogs'];
+					for ($counter = 1; $counter <= $numberofdialogs; $counter++): ?>
+						<?php $tempoptionname = "MD_PP" . $counter;
+						   $tempoptions = get_option($tempoptionname); ?>
+						   <option value="<?php echo $counter ?>" <?php if ($dialogid == $counter) echo 'SELECTED';?>><?php _e('Dialog', 'modal-dialog'); ?> <?php echo $counter ?><?php if ($tempoptions != "") echo " (" . $tempoptions['dialogname'] . ")"; ?></option>
+					<?php endfor; ?>
+				</SELECT>
+				</td>				
+			</tr>
+		</table>
+	<?php }
+	
+	function md_editsave_post_field($post_id) {
+		if (isset($_POST['dialogid']))
+			update_post_meta($post_id, "modal-dialog-id", $_POST['dialogid']);
+	}
+	
+	/********************************************* Shortcode processing functions *****************************************/
+	
+	function modal_dialog_header($manualdisplay = false) {
+		global $post;
+		$thePostID = $post->ID;
+		
+		if ($post->ID != '')
+		{
+			$dialogid = get_post_meta($post->ID, "modal-dialog-id", true);
+			if ($dialogid != "" && $dialogid != 0)
+				$display = true;
+			elseif ($dialogid == "")
+				$display = false;
+		}
+		else
+		{
+			$display = false;
+		}
+		
+		if ($display == false)
+		{
+			$genoptions = get_option('MD_General');
+
+			for ($counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter++) {
+				$optionsname = "MD_PP" . $counter;
+				$options = get_option($optionsname);
+				
+				if (($options['active'] || $manualdisplay) && !is_admin())
+				{
+					if ($options['showfrontpage'])
+					{
+						if (is_front_page())
+							$display = true;		
+						else
+							$display = false;
+					}			
+					elseif ($options['forcepagelist'] == true)
+					{
+						$pagelist = explode(',', $options['pages']);
+						
+						if ($pagelist)		
+							foreach ($pagelist as $pageid)
+							{
+								if ( is_page(intval($pageid)) || is_single($pageid) )
+								{
+									$display = true;
+									break 2;
+								}
+								else
+									$display = false;
+							}
+					}
+					else
+						$display = true;		
+				}
+			}
+			
+			if ($display == false)
+			{
+				$primaryoptions = get_option('MD_PP1');
+				
+				if ($primaryoptions['forcepagelist'] == false)
+					$display = true;
+			}
+		}
 		
 		if ($display == true)
 		{
@@ -382,80 +705,87 @@ function modal_dialog_header($manualdisplay = false) {
 			echo "</STYLE>";	
 		}
 	}
-}
-
-function modal_dialog_init($manualdisplay = false)
-{
-	$options = get_option('MD_PP');
 	
-	if (($options['active'] == true || $manualdisplay) && !is_admin())
-	{
-		wp_enqueue_script('jquery');
-		wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.pack.js", "", "1.3.1");
-		wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/jquery.cookie.js", "", "1.0");
-	}	
-}
-
-function modal_dialog_admin_init()
-{
-	wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/jquery.cookie.js", "", "1.0");
-}
-
-$version = "1.0";
-
-// adds the menu item to the admin interface
-add_action('admin_menu', array('MD_Admin','add_config_page'));
-
-add_action('wp_footer', 'modal_dialog_footer');
-add_action('wp_head', 'modal_dialog_header');
-add_action('init', 'modal_dialog_init');
-add_action('admin_init', 'modal_dialog_admin_init');
-
-$options  = get_option('MD_PP');
-
-
-
-function modal_dialog_footer($manualdisplay = false) {
-
-	$options  = get_option('MD_PP');
-	wp_reset_query();
-	
-	if (($options['active'] || $manualdisplay) && !is_admin())
-	{
-		if ($options['forcepagelist'] == false)
-			$display = true;
-		elseif ($options['showfrontpage'])
+	function modal_dialog_footer($manualdisplay = false) {		
+		global $post;
+		$thePostID = $post->ID;
+		
+		if ($post->ID != '')
 		{
-			if (is_front_page())
-				$display = true;		
-			else
+			$dialogid = get_post_meta($post->ID, "modal-dialog-id", true);
+			if ($dialogid != "" && $dialogid != 0)
+			{
+				$display = true;
+			}
+			elseif ($dialogid == "")
 				$display = false;
-		}			
-		elseif ($options['forcepagelist'] == true)
-		{
-			$pagelist = explode(',', $options['pages']);
-			
-			if ($pagelist)		
-				foreach ($pagelist as $pageid)
-				{
-					if ( is_page(intval($pageid)) || is_single($pageid) )
-					{
-						$display = true;
-						break;
-					}
-					else
-						$display = false;
-				}
 		}
 		else
-			$display = true;	
+		{
+			$display = false;
+		}
+		
+		wp_reset_query();
+		
+		if ($display == false)
+		{
+			$genoptions = get_option('MD_General');
+
+			for ($counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter++) {
+				$optionsname = "MD_PP" . $counter;
+				$options = get_option($optionsname);
+				
+				if (($options['active'] || $manualdisplay) && !is_admin())
+				{
+					if ($options['showfrontpage'])
+					{
+						if (is_front_page())
+						{
+							$display = true;	
+							$dialogid = $counter;
+						}
+						else
+							$display = false;
+					}			
+					elseif ($options['forcepagelist'] == true)
+					{
+						$pagelist = explode(',', $options['pages']);
+						
+						if ($pagelist)		
+							foreach ($pagelist as $pageid)
+							{
+								if ( is_page(intval($pageid)) || is_single($pageid) )
+								{
+									$display = true;
+									$dialogid = $counter;
+									break 2;
+								}
+								else
+									$display = false;
+							}
+					}
+				}
+			}
 			
-		if ($display == true)
+			if ($display == false)
+			{
+				$primaryoptions = get_option('MD_PP1');
+				
+				if ($primaryoptions['forcepagelist'] == false)
+				{
+					$display = true;
+					$dialogid = 1;
+				}
+			}
+		}	
+	
+		if ($display == true && $dialogid != 0)
 		{
 			global $wpdb;
 			
-			$options = get_option('MD_PP');
-			
+			$optionsname = "MD_PP" . $dialogid;
+			$options = get_option($optionsname);
+						
 			$output = "<!-- Modal Dialog Output -->\n";
 			
 			if ($options['contentlocation'] == 'Inline')
@@ -578,7 +908,9 @@ function modal_dialog_footer($manualdisplay = false) {
 			echo $output;
 		}
 	}
+
 }
 
+$my_modal_dialog_plugin = new modal_dialog_plugin();
 
 ?>
