@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.0.2 =
+* Restored Manual Display option when calling Modal Dialog functions manually
+
 = 2.0.1 =
 * Fixed internal error problem that appeared in version 2.0 on some systems
 

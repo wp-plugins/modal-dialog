@@ -665,8 +665,8 @@ class modal_dialog_plugin {
 									$display = false;
 							}
 					}
-					else
-						$display = true;		
+					elseif ($manualdisplay == true)
+						$display = true;
 				}
 			}
 			
@@ -766,6 +766,8 @@ class modal_dialog_plugin {
 									$display = false;
 							}
 					}
+					elseif ($manualdisplay == true)
+						$display = true;					
 				}
 			}
 			
