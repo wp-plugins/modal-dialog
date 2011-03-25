@@ -1,8 +1,8 @@
 <?php
-/*Plugin Name: Modal Dialog
+/* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.0
+Version: 2.0.1
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA*/
 define('MODAL_DIALOG_ADMIN_PAGE_NAME', 'modal-dialog');
 
 define('MDDIR', dirname(__FILE__) . '/');
+
+require_once(ABSPATH . '/wp-admin/includes/template.php');
 
 //class that reperesent the complete plugin
 class modal_dialog_plugin {
@@ -50,9 +52,9 @@ class modal_dialog_plugin {
 		add_action('admin_post_save_modal_dialog_general', array($this, 'on_save_changes_general'));
 		add_action('admin_post_save_modal_dialog_configurations', array($this, 'on_save_changes_configurations'));
 		
-		// Add addition section to Link Edition page
-		add_meta_box ('modaldialog_meta_box', __('Modal Dialog', 'modal-dialog'), array($this, 'md_link_edit_extra'), 'post', 'normal', 'high');
-		add_meta_box ('modaldialog_meta_box', __('Modal Dialog', 'modal-dialog'), array($this, 'md_link_edit_extra'), 'page', 'normal', 'high');
+		// Add addition section to Post/Page Edition page
+		add_meta_box ('modaldialog_meta_box', __('Modal Dialog', 'modal-dialog'), array($this, 'md_post_edit_extra'), 'post', 'normal', 'high');
+		add_meta_box ('modaldialog_meta_box', __('Modal Dialog', 'modal-dialog'), array($this, 'md_post_edit_extra'), 'page', 'normal', 'high');
 		
 		add_action('edit_post', array($this, 'md_editsave_post_field'));
 		add_action('save_post', array($this, 'md_editsave_post_field'));
@@ -176,7 +178,7 @@ class modal_dialog_plugin {
 	function on_admin_menu() {
 		//add our own option page, you can also add it to different sections or use your own one
 		$this->pagehooktop = add_menu_page(__('Modal Dialog General Options', 'modal-dialog'), "Modal Dialog", 'manage_options', MODAL_DIALOG_ADMIN_PAGE_NAME, array($this, 'on_show_page'), $this->mdpluginpath . '/icons/ModalDialog16.png');
-		$this->pagehooksettings = add_submenu_page( MODAL_DIALOG_ADMIN_PAGE_NAME, __('Modal Dialog - Configurations', 'community-events') , __('Configurations', 'modal-dialog'), 'manage_options', 'modal-dialog-configurations', array($this,'on_show_page'));
+		$this->pagehooksettings = add_submenu_page( MODAL_DIALOG_ADMIN_PAGE_NAME, __('Modal Dialog - Configurations', 'modal-dialog') , __('Configurations', 'modal-dialog'), 'manage_options', 'modal-dialog-configurations', array($this,'on_show_page'));
 		
 		//register  callback gets call prior your own page gets rendered
 		add_action('load-'.$this->pagehooktop, array(&$this, 'on_load_page'));
@@ -258,7 +260,7 @@ class modal_dialog_plugin {
 		?>
 		<div id="modal-dialog-general" class="wrap">
 		<div class='icon32'><img src="<?php echo $this->mdpluginpath . '/icons/ModalDialog32.png'; ?>" /></div>
-		<h2><?php echo $pagetitle; ?><span style='padding-left: 50px'><a href="http://yannickcorner.nayanna.biz/wordpress-plugins/modal-dialog/" target="linklibrary"><img src="<?php echo $this->mdpluginpath; ?>/icons/btn_donate_LG.gif" /></a></span></h2>
+		<h2><?php echo $pagetitle; ?><span style='padding-left: 50px'><a href="http://yannickcorner.nayanna.biz/wordpress-plugins/modal-dialog/" target="modaldialog"><img src="<?php echo $this->mdpluginpath; ?>/icons/btn_donate_LG.gif" /></a></span></h2>
 		<form action="admin-post.php" method="post" id='mdform' enctype='multipart/form-data'>
 			<?php wp_nonce_field('modal-dialog-general'); ?>
 			<?php wp_nonce_field('closedpostboxes', 'closedpostboxesnonce', false ); ?>
@@ -570,7 +572,7 @@ class modal_dialog_plugin {
 	
 	<?php }
 	
-	function md_link_edit_extra($post) {
+	function md_post_edit_extra($post) {
 		global $wpdb;
 
 		$genoptions = get_option('MD_General');

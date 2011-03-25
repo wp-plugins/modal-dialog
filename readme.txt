@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.0.1 =
+* Fixed internal error problem that appeared in version 2.0 on some systems
+
 = 2.0 =
 * Adds ability to define multiple modal dialogs
 * Adds ability of assigning a modal dialog to a post/page in editor
