@@ -22,6 +22,10 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.0.3 =
+* Fixed error in Screen Options tab
+* Fixed admin page layout
+
 = 2.0.2 =
 * Restored Manual Display option when calling Modal Dialog functions manually
 
