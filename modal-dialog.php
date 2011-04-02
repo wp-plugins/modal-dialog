@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.0.3
+Version: 2.0.4
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -59,9 +59,7 @@ class modal_dialog_plugin {
 		add_action('edit_post', array($this, 'md_editsave_post_field'));
 		add_action('save_post', array($this, 'md_editsave_post_field'));
 		
-		wp_enqueue_script('jquery');
-		wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.pack.js", "", "1.3.1");
-		wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/jquery.cookie.js", "", "1.0");
+		$this->modal_dialog_init();
 		
 		add_action('wp_footer', array($this, 'modal_dialog_footer'));
 		add_action('wp_head', array($this, 'modal_dialog_header'));
@@ -944,7 +942,13 @@ class modal_dialog_plugin {
 			echo $output;
 		}
 	}
-
+	
+	function modal_dialog_init()
+	{
+		wp_enqueue_script('jquery');
+		wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.pack.js", "", "1.3.1");
+		wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/jquery.cookie.js", "", "1.0");
+	}
 }
 
 $my_modal_dialog_plugin = new modal_dialog_plugin();
