@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.0.4
+Version: 2.0.5
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -67,6 +67,8 @@ class modal_dialog_plugin {
 		
 		register_activation_hook(__FILE__, array($this, 'md_install'));
 		register_deactivation_hook(__FILE__, array($this, 'md_uninstall'));
+		
+		return $this;
 	}
 	
 	//for WordPress 2.8 we have to tell, that we support 2 columns !
@@ -943,7 +945,7 @@ class modal_dialog_plugin {
 		}
 	}
 	
-	function modal_dialog_init()
+	public function modal_dialog_init()
 	{
 		wp_enqueue_script('jquery');
 		wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.pack.js", "", "1.3.1");
@@ -951,6 +953,7 @@ class modal_dialog_plugin {
 	}
 }
 
+global $my_modal_dialog_plugin;
 $my_modal_dialog_plugin = new modal_dialog_plugin();
 
 ?>
