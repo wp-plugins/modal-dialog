@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.0.6 =
+* Renamed jQuery.cookie.js to cookie.js to resolve a user issue
+
 = 2.0.5 =
 * Declared global variable to hold plugin class to allow for external calls
 
