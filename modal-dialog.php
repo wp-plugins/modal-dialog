@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.0.6
+Version: 2.1
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -622,7 +622,8 @@ class modal_dialog_plugin {
 	
 	function modal_dialog_admin_header() {
 		echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.css'/>\n";
-		echo "<STYLE>\n";
+		echo "<!–[if lt IE 7]>\n";
+		echo "<style type=’text/css’>\n";
 		
 		echo "/* IE */\n";
 		echo "#fancybox-loading.fancybox-ie div	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_loading.png', sizingMethod='scale'); }\n";
@@ -644,7 +645,8 @@ class modal_dialog_plugin {
 		echo ".fancybox-ie #fancy-bg-w	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_w.png', sizingMethod='scale'); }\n";
 		echo ".fancybox-ie #fancy-bg-nw	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_nw.png', sizingMethod='scale'); }\n";
 		
-		echo "</STYLE>";	
+		echo "</style>";
+		echo "<![endif]–>\n";
 	}
 	
 	function modal_dialog_header($manualdisplay = false) {
@@ -714,7 +716,8 @@ class modal_dialog_plugin {
 		if ($display == true)
 		{
 			echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.css'/>\n";
-			echo "<STYLE>\n";
+			echo "<!–[if lt IE 7]>\n";
+			echo "<style type=’text/css’>\n";
 			
 			echo "/* IE */\n";
 			echo "#fancybox-loading.fancybox-ie div	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_loading.png', sizingMethod='scale'); }\n";
@@ -736,7 +739,8 @@ class modal_dialog_plugin {
 			echo ".fancybox-ie #fancy-bg-w	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_w.png', sizingMethod='scale'); }\n";
 			echo ".fancybox-ie #fancy-bg-nw	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_nw.png', sizingMethod='scale'); }\n";
 			
-			echo "</STYLE>";	
+			echo "</style>";
+			echo "<![endif]–>\n";
 		}
 	}
 	
