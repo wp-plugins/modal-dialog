@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.1.1 =
+* Updated version of jQuery Cookies script to try and resolve a problem with Chrome on PC
+
 = 2.1 =
 * Changed IE-specific code only to display in IE7 or older
 * Tested against Wordpress 3.2
