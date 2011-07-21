@@ -22,6 +22,10 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.2 =
+* Added option to only display dialog every X number of times that page is reloaded
+* Added option to not display dialog to users that are logged on to site
+
 = 2.1.1 =
 * Updated version of jQuery Cookies script to try and resolve a problem with Chrome on PC
 

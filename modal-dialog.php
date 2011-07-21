@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.1.1
+Version: 2.2
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -117,6 +117,8 @@ class modal_dialog_plugin {
 		$options['overlayopacity'] = '0.3';
 		$options['autoclose'] = false;
 		$options['autoclosetime'] = 5000;
+		$options['checklogin'] = false;
+		$options['displayfrequency'] = 1;
 	
 		$configname = "MD_PP" . $confignumber;
 		update_option($configname, $options);
@@ -352,7 +354,7 @@ class modal_dialog_plugin {
 				
 		foreach (array('dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
 				'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'sessioncookiename', 'overlayopacity',
-				'autoclosetime', 'dialogname') as $option_name) {
+				'autoclosetime', 'dialogname', 'displayfrequency') as $option_name) {
 				if (isset($_POST[$option_name])) {
 					$options[$option_name] = $_POST[$option_name];
 				}
@@ -367,7 +369,7 @@ class modal_dialog_plugin {
 		}
 		
 		foreach (array('autosize', 'showfrontpage', 'forcepagelist', 'oncepersession', 'hideclosebutton', 'centeronscroll', 'manualcookiecreation',
-						'autoclose') as $option_name) {
+						'autoclose', 'checklogin') as $option_name) {
 			if (isset($_POST[$option_name])) {
 				$options[$option_name] = true;
 			} else {
@@ -477,6 +479,12 @@ class modal_dialog_plugin {
 				<td><input type="text" id="numberoftimes" name="numberoftimes" size="4" value="<?php echo $options['numberoftimes']; ?>"/></td>
 			</tr>
 			<tr>
+				<td>Period to display dialog (every # page loads)</td>
+				<td><input type="text" id="displayfrequency" name="displayfrequency" size="4" value="<?php echo ($options['displayfrequency'] == '' ? '1': $options['displayfrequency']); ?>"/></td></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
 				<td>Cookie Name</td>
 				<td><input type="text" id="cookiename" name="cookiename" size="30" value="<?php echo $options['cookiename']; ?>"/></td>
 				<td>Dialog Exit Method</td>
@@ -500,12 +508,14 @@ class modal_dialog_plugin {
 				<td><input type="button" id="deletecookies" name="deletecookies" value="Delete All Cookies" /></td>
 			</tr>
 			<tr>
+				<td>Do not show if user logged in</td>
+				<td><input type="checkbox" id="checklogin" name="checklogin" <?php if ($options['checklogin']) echo ' checked="checked" '; ?>/></td>
 				<td>Hide Close Button</td>
 				<td><input type="checkbox" id="hideclosebutton" name="hideclosebutton" <?php if ($options['hideclosebutton']) echo ' checked="checked" '; ?>/></td>
-				<td>Center on scroll</td>
-				<td><input type="checkbox" id="centeronscroll" name="centeronscroll" <?php if ($options['centeronscroll']) echo ' checked="checked" '; ?>/></td>
 			</tr>
 			<tr>
+				<td>Center on scroll</td>
+				<td><input type="checkbox" id="centeronscroll" name="centeronscroll" <?php if ($options['centeronscroll']) echo ' checked="checked" '; ?>/></td>
 				<td>Auto-Size Dialog</td>
 				<td><input type="checkbox" id="autosize" name="autosize" <?php if ($options['autosize']) echo ' checked="checked" '; ?>/></td>
 			</tr>
@@ -622,10 +632,10 @@ class modal_dialog_plugin {
 	
 	function modal_dialog_admin_header() {
 		echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.css'/>\n";
-		echo "<!–[if lt IE 7]>\n";
-		echo "<style type=’text/css’>\n";
+		echo "<![if lt IE 7]>\n";
+		echo "<style type='text/css'>\n";
 		
-		echo "/* IE */\n";
+		echo "/*IE*/\n";
 		echo "#fancybox-loading.fancybox-ie div	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_loading.png', sizingMethod='scale'); }\n";
 		echo ".fancybox-ie #fancybox-close		{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_close.png', sizingMethod='scale'); }\n";
 		echo ".fancybox-ie #fancybox-title-over	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_title_over.png', sizingMethod='scale'); zoom: 1; }\n";
@@ -646,7 +656,7 @@ class modal_dialog_plugin {
 		echo ".fancybox-ie #fancy-bg-nw	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_nw.png', sizingMethod='scale'); }\n";
 		
 		echo "</style>";
-		echo "<![endif]–>\n";
+		echo "<![endif]>\n";
 	}
 	
 	function modal_dialog_header($manualdisplay = false) {
@@ -665,7 +675,7 @@ class modal_dialog_plugin {
 		{
 			$display = false;
 		}
-		
+
 		if ($display == false)
 		{
 			$genoptions = get_option('MD_General');
@@ -674,50 +684,59 @@ class modal_dialog_plugin {
 				$optionsname = "MD_PP" . $counter;
 				$options = get_option($optionsname);
 				
-				if (($options['active'] || $manualdisplay) && !is_admin())
+				if ($options['checklogin'] == false || ($options['checklogin'] == true && !is_user_logged_in()))
 				{
-					if ($options['showfrontpage'])
+					if (($options['active'] || $manualdisplay) && !is_admin())
 					{
-						if (is_front_page())
-							$display = true;		
-						else
-							$display = false;
-					}			
-					elseif ($options['forcepagelist'] == true)
-					{
-						$pagelist = explode(',', $options['pages']);
-						
-						if ($pagelist)		
-							foreach ($pagelist as $pageid)
-							{
-								if ( is_page(intval($pageid)) || is_single($pageid) )
+						if ($options['showfrontpage'])
+						{
+							if (is_front_page())
+								$display = true;		
+							else
+								$display = false;
+						}			
+						elseif ($options['forcepagelist'] == true)
+						{
+							$pagelist = explode(',', $options['pages']);
+
+							if ($pagelist)		
+								foreach ($pagelist as $pageid)
 								{
-									$display = true;
-									break 2;
+									if ( is_page(intval($pageid)) || is_single($pageid) )
+									{
+										$display = true;
+										break 2;
+									}
+									else
+										$display = false;
 								}
-								else
-									$display = false;
-							}
+						}
+						elseif ($manualdisplay == true)
+							$display = true;
 					}
-					elseif ($manualdisplay == true)
-						$display = true;
 				}
+				else
+					$display = false;
 			}
-			
+
 			if ($display == false)
 			{
 				$primaryoptions = get_option('MD_PP1');
-				
-				if ($primaryoptions['forcepagelist'] == false)
-					$display = true;
+
+				if ($primaryoptions['checklogin'] == true && !is_user_logged_in())
+				{
+					if ($primaryoptions['forcepagelist'] == false)
+						$display = true;
+				}
 			}
 		}
+		
 		
 		if ($display == true)
 		{
 			echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.css'/>\n";
-			echo "<!–[if lt IE 7]>\n";
-			echo "<style type=’text/css’>\n";
+			echo "<![if lt IE 7]>\n";
+			echo "<style type='text/css'>\n";
 			
 			echo "/* IE */\n";
 			echo "#fancybox-loading.fancybox-ie div	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_loading.png', sizingMethod='scale'); }\n";
@@ -740,7 +759,7 @@ class modal_dialog_plugin {
 			echo ".fancybox-ie #fancy-bg-nw	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_nw.png', sizingMethod='scale'); }\n";
 			
 			echo "</style>";
-			echo "<![endif]–>\n";
+			echo "<![endif]>\n";
 		}
 	}
 	
@@ -762,9 +781,9 @@ class modal_dialog_plugin {
 		{
 			$display = false;
 		}
-		
+
 		wp_reset_query();
-		
+
 		if ($display == false)
 		{
 			$genoptions = get_option('MD_General');
@@ -773,51 +792,59 @@ class modal_dialog_plugin {
 				$optionsname = "MD_PP" . $counter;
 				$options = get_option($optionsname);
 				
-				if (($options['active'] || $manualdisplay) && !is_admin())
+				if ($options['checklogin'] == false || ($options['checklogin'] == true && !is_user_logged_in()))
 				{
-					if ($options['showfrontpage'])
+					if (($options['active'] || $manualdisplay) && !is_admin())
 					{
-						if (is_front_page())
+						if ($options['showfrontpage'])
 						{
-							$display = true;	
-							$dialogid = $counter;
-						}
-						else
-							$display = false;
-					}			
-					elseif ($options['forcepagelist'] == true)
-					{
-						$pagelist = explode(',', $options['pages']);
-						
-						if ($pagelist)		
-							foreach ($pagelist as $pageid)
+							if (is_front_page())
 							{
-								if ( is_page(intval($pageid)) || is_single($pageid) )
-								{
-									$display = true;
-									$dialogid = $counter;
-									break 2;
-								}
-								else
-									$display = false;
+								$display = true;	
+								$dialogid = $counter;
 							}
+							else
+								$display = false;
+						}			
+						elseif ($options['forcepagelist'] == true)
+						{
+							$pagelist = explode(',', $options['pages']);
+
+							if ($pagelist)		
+								foreach ($pagelist as $pageid)
+								{
+									if ( is_page(intval($pageid)) || is_single($pageid) )
+									{
+										$display = true;
+										$dialogid = $counter;
+										break 2;
+									}
+									else
+										$display = false;
+								}
+						}
+						elseif ($manualdisplay == true)
+							$display = true;					
 					}
-					elseif ($manualdisplay == true)
-						$display = true;					
 				}
+				else
+					$display = false;
 			}
-			
+
 			if ($display == false)
 			{
 				$primaryoptions = get_option('MD_PP1');
 				
-				if ($primaryoptions['forcepagelist'] == false)
+				if ($primaryoptions['checklogin'] == true && !is_user_logged_in())
 				{
-					$display = true;
-					$dialogid = 1;
+					if ($primaryoptions['forcepagelist'] == false)
+					{
+						$display = true;
+						$dialogid = 1;
+					}
 				}
 			}
-		}	
+		}
 	
 		if ($display == true && $dialogid != 0)
 		{
@@ -904,6 +931,7 @@ class modal_dialog_plugin {
 				$output .= "\tvar cookievalue = jQuery.cookie('" . $options['cookiename'] . "');\n";
 				$output .= "\tif (cookievalue == null) cookievalue = 0;\n";
 				$output .= "\tif (cookievalue < " . $options['numberoftimes'] . ")\n";
+				
 				$output .= "\t{\n";
 				
 				if ($options['manualcookiecreation'] == false)
@@ -918,6 +946,9 @@ class modal_dialog_plugin {
 					
 					$output .= ");\n";
 				}
+				if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '')
+					$output .= 'if (cookievalue % ' . $options['displayfrequency'] . ' == 0) {';
+
 				$output .= "\t\tsetTimeout(\n";
 				$output .= "\t\t\tfunction(){\n";
 				
@@ -928,6 +959,9 @@ class modal_dialog_plugin {
 					
 				$output .= "\t\t\t}, " . $options['delay'] . ");\n";
 				$output .= "\t\t};\n";
+				
+				if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '')
+					$output .= '}';
 				
 				if ($options['oncepersession'] == true)
 				{
