@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.2.2 =
+* Added call to do_shortcode on dialogtext so that shortcodes can be inserted and processed for the content
+
 = 2.2.1 =
 * Fixed issue with Modal Dialog not showing up after upgrading
 
