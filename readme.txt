@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.2.1 =
+* Fixed issue with Modal Dialog not showing up after upgrading
+
 = 2.2 =
 * Added option to only display dialog every X number of times that page is reloaded
 * Added option to not display dialog to users that are logged on to site

@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.2
+Version: 2.2.1
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -684,7 +684,7 @@ class modal_dialog_plugin {
 				$optionsname = "MD_PP" . $counter;
 				$options = get_option($optionsname);
 				
-				if ($options['checklogin'] == false || ($options['checklogin'] == true && !is_user_logged_in()))
+				if (($options['checklogin'] == false || $options['checklogin'] == '') || ($options['checklogin'] == true && !is_user_logged_in()))
 				{
 					if (($options['active'] || $manualdisplay) && !is_admin())
 					{
@@ -723,7 +723,7 @@ class modal_dialog_plugin {
 			{
 				$primaryoptions = get_option('MD_PP1');
 
-				if ($primaryoptions['checklogin'] == true && !is_user_logged_in())
+				if (($primaryoptions['checklogin'] == false || $primaryoptions['checklogin'] == '') || ($primaryoptions['checklogin'] == true && !is_user_logged_in()))
 				{
 					if ($primaryoptions['forcepagelist'] == false)
 						$display = true;
@@ -792,7 +792,7 @@ class modal_dialog_plugin {
 				$optionsname = "MD_PP" . $counter;
 				$options = get_option($optionsname);
 				
-				if ($options['checklogin'] == false || ($options['checklogin'] == true && !is_user_logged_in()))
+				if (($options['checklogin'] == false || $options['checklogin'] == '') || ($options['checklogin'] == true && !is_user_logged_in()))
 				{
 					if (($options['active'] || $manualdisplay) && !is_admin())
 					{
@@ -835,7 +835,7 @@ class modal_dialog_plugin {
 			{
 				$primaryoptions = get_option('MD_PP1');
 				
-				if ($primaryoptions['checklogin'] == true && !is_user_logged_in())
+				if (($primaryoptions['checklogin'] == false || $options['checklogin'] == '') || ($primaryoptions['checklogin'] == true && !is_user_logged_in()))
 				{
 					if ($primaryoptions['forcepagelist'] == false)
 					{
