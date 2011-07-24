@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.2.3 =
+* Added option to display modal dialog when a new comment is posted (as a thank you note)
+
 = 2.2.2 =
 * Added call to do_shortcode on dialogtext so that shortcodes can be inserted and processed for the content
 

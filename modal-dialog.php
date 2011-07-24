@@ -65,10 +65,35 @@ class modal_dialog_plugin {
 		add_action('wp_head', array($this, 'modal_dialog_header'));
 		add_action('admin_head', array($this, 'modal_dialog_admin_header'));
 		
+		add_action('comment_post_redirect', array($this, 'comment_redirect_filter'), 10, 2);
+		
 		register_activation_hook(__FILE__, array($this, 'md_install'));
 		register_deactivation_hook(__FILE__, array($this, 'md_uninstall'));
 		
 		return $this;
+	}
+	
+	function comment_redirect_filter($location, $comment) {
+		$genoptions = get_option('MD_General');
+
+		for ($counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter++) {
+			$optionsname = "MD_PP" . $counter;
+			$options = get_option($optionsname);
+			
+			if ($options['showaftercommentposted'] == true)
+			{
+				$commentanchorpos = strpos($location, '#comment');
+				if ($commentanchorpos != false)
+				{
+					$showdialogstring = '?showmodaldialog=' . $counter;
+					$location = substr_replace($location, $showdialogstring, $commentanchorpos, 0);	
+				}
+				break;
+			}
+			
+		}
+		
+		return $location;
 	}
 	
 	//for WordPress 2.8 we have to tell, that we support 2 columns !
@@ -119,6 +144,7 @@ class modal_dialog_plugin {
 		$options['autoclosetime'] = 5000;
 		$options['checklogin'] = false;
 		$options['displayfrequency'] = 1;
+		$options['showaftercommentposted'] = false;
 	
 		$configname = "MD_PP" . $confignumber;
 		update_option($configname, $options);
@@ -369,7 +395,7 @@ class modal_dialog_plugin {
 		}
 		
 		foreach (array('autosize', 'showfrontpage', 'forcepagelist', 'oncepersession', 'hideclosebutton', 'centeronscroll', 'manualcookiecreation',
-						'autoclose', 'checklogin') as $option_name) {
+						'autoclose', 'checklogin', 'showaftercommentposted') as $option_name) {
 			if (isset($_POST[$option_name])) {
 				$options[$option_name] = true;
 			} else {
@@ -542,6 +568,10 @@ class modal_dialog_plugin {
 				<td colspan=3><input type="text" id="pages" name="pages" size="120" value="<?php echo $options['pages']; ?>"/></td>
 			</tr>
 			<tr>
+				<td>Display after new comment posted</td>
+				<td><input type="checkbox" id="showaftercommentposted" name="showaftercommentposted" <?php if ($options['showaftercommentposted'] == true) echo ' checked="checked" '; ?>/></td>
+			</tr>
+			<tr>
 				<td>Overlay Color</td>
 				<td><input type="text" id="overlaycolor" name="overlaycolor" size="8" value="<?php echo $options['overlaycolor']; ?>"/></td>
 				<td>Overlay Opacity (0 to 1)</td>
@@ -663,7 +693,11 @@ class modal_dialog_plugin {
 		global $post;
 		$thePostID = $post->ID;
 		
-		if ($post->ID != '')
+		if (isset($_GET['showmodaldialog']))
+		{
+			$display = true;
+		}
+		elseif ($post->ID != '')
 		{
 			$dialogid = get_post_meta($post->ID, "modal-dialog-id", true);
 			if ($dialogid != "" && $dialogid != 0)
@@ -767,7 +801,12 @@ class modal_dialog_plugin {
 		global $post;
 		$thePostID = $post->ID;
 		
-		if ($post->ID != '')
+		if (isset($_GET['showmodaldialog']))
+		{
+			$display = true;
+			$dialogid = $_GET['showmodaldialog'];
+		}
+		elseif ($post->ID != '')
 		{
 			$dialogid = get_post_meta($post->ID, "modal-dialog-id", true);
 			if ($dialogid != "" && $dialogid != 0)
@@ -946,7 +985,7 @@ class modal_dialog_plugin {
 					
 					$output .= ");\n";
 				}
-				if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '')
+				if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '' && $options['showaftercommentposted'] == false)
 					$output .= 'if (cookievalue % ' . $options['displayfrequency'] . ' == 0) {';
 
 				$output .= "\t\tsetTimeout(\n";
@@ -960,7 +999,7 @@ class modal_dialog_plugin {
 				$output .= "\t\t\t}, " . $options['delay'] . ");\n";
 				$output .= "\t\t};\n";
 				
-				if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '')
+				if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '' && $options['showaftercommentposted'] == false)
 					$output .= '}';
 				
 				if ($options['oncepersession'] == true)
