@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.2.3
+Version: 2.2.4
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -145,6 +145,7 @@ class modal_dialog_plugin {
 		$options['checklogin'] = false;
 		$options['displayfrequency'] = 1;
 		$options['showaftercommentposted'] = false;
+		$options['dialogclosingcallback'] = '';
 	
 		$configname = "MD_PP" . $confignumber;
 		update_option($configname, $options);
@@ -380,7 +381,7 @@ class modal_dialog_plugin {
 				
 		foreach (array('dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
 				'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'sessioncookiename', 'overlayopacity',
-				'autoclosetime', 'dialogname', 'displayfrequency') as $option_name) {
+				'autoclosetime', 'dialogname', 'displayfrequency', 'dialogclosingcallback') as $option_name) {
 				if (isset($_POST[$option_name])) {
 					$options[$option_name] = $_POST[$option_name];
 				}
@@ -556,6 +557,10 @@ class modal_dialog_plugin {
 				<td><input type="checkbox" id="autoclose" name="autoclose" <?php if ($options['autoclose']) echo ' checked="checked" '; ?>/></td>
 				<td>Auto-Close Time (in ms)</td>
 				<td><input type="text" id="autoclosetime" name="autoclosetime" size="8" value="<?php echo $options['autoclosetime']; ?>"/></td>						
+			</tr>
+			<tr>
+				<td>Javascript Dialog Closure Callback</td>
+				<td><input type="text" id="dialogclosingcallback" name="dialogclosingcallback" size="30" value="<?php echo $options['dialogclosingcallback']; ?>"/></td>
 			</tr>
 			<tr>
 				<td>Only show on specific pages and single posts</td>
@@ -937,6 +942,11 @@ class modal_dialog_plugin {
 				if ($options['centeronscroll'] == true)
 				{
 					$output .= "'centerOnScroll': true,\n";
+				}
+				
+				if ($options['dialogclosingcallback'] != '')
+				{
+					$output .= "'onClosed': function() {" . $options['dialogclosingcallback']. "},\n";
 				}
 				
 				if ($options['autosize'] == true)

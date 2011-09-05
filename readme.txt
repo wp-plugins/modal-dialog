@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.2.4 =
+* Added mechanism to register callback function to be called when the Modal Dialog is closed
+
 = 2.2.3 =
 * Added option to display modal dialog when a new comment is posted (as a thank you note)
 
