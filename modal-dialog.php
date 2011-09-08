@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.2.4
+Version: 2.2.5
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -61,8 +61,20 @@ class modal_dialog_plugin {
 		
 		$this->modal_dialog_init();
 		
-		add_action('wp_footer', array($this, 'modal_dialog_footer'));
-		add_action('wp_head', array($this, 'modal_dialog_header'));
+		$genoptions = get_option('MD_General');
+
+		for ($counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter++) {
+			$optionsname = "MD_PP" . $counter;
+			$options = get_option($optionsname);
+			
+			if ($options['active'] == true)
+			{
+				add_action('wp_footer', array($this, 'modal_dialog_footer'));
+				add_action('wp_head', array($this, 'modal_dialog_header'));
+				break;
+			}
+		}
+		
 		add_action('admin_head', array($this, 'modal_dialog_admin_header'));
 		
 		add_action('comment_post_redirect', array($this, 'comment_redirect_filter'), 10, 2);
@@ -806,6 +818,8 @@ class modal_dialog_plugin {
 		global $post;
 		$thePostID = $post->ID;
 		
+		wp_reset_query();
+		
 		if (isset($_GET['showmodaldialog']))
 		{
 			$display = true;
@@ -825,9 +839,7 @@ class modal_dialog_plugin {
 		{
 			$display = false;
 		}
-
-		wp_reset_query();
-
+		
 		if ($display == false)
 		{
 			$genoptions = get_option('MD_General');
