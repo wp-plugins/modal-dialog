@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.2.5
+Version: 2.3
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -33,8 +33,7 @@ class modal_dialog_plugin {
 	//constructor of class, PHP4 compatible construction for backward compatibility
 	function modal_dialog_plugin() {
 
-		$this->mdpluginpath = WP_CONTENT_URL.'/plugins/'.plugin_basename(dirname(__FILE__)).'/';
-		
+		$this->mdpluginpath = WP_CONTENT_URL.'/plugins/'.plugin_basename(dirname(__FILE__)).'/';		
 		load_plugin_textdomain( 'modal-dialog', $this->mdpluginpath . '/languages', 'modal-dialog/languages');
 
 		$options = get_option('MD_PP');
@@ -67,11 +66,21 @@ class modal_dialog_plugin {
 			$optionsname = "MD_PP" . $counter;
 			$options = get_option($optionsname);
 			
+			if ($genoptions['disableonmobilebrowsers'] == true)
+			{
+				require_once(ABSPATH . '/wp-content/plugins/modal-dialog/mdetect.php');
+				$browserchecker = new uagent_info();
+				$mobilebrowser = $browserchecker->DetectMobileQuick();
+			}
+			
 			if ($options['active'] == true)
 			{
+				if ($genoptions['disableonmobilebrowsers'] == false || ($genoptions['disableonmobilebrowsers'] == true && $mobilebrowser == false))
+				{
 				add_action('wp_footer', array($this, 'modal_dialog_footer'));
 				add_action('wp_head', array($this, 'modal_dialog_header'));
 				break;
+				}
 			}
 		}
 		
@@ -185,6 +194,7 @@ class modal_dialog_plugin {
 		if ($genoptions == false) {
 			$genoptions['numberofmodaldialogs'] = 1;
 			$genoptions['primarydialog'] = 1;
+			$genoptions['disableonmobilebrowsers'] = false;
 			
 			update_option('MD_General', $genoptions);
 		}
@@ -348,16 +358,8 @@ class modal_dialog_plugin {
 					$options[$option_name] = $_POST[$option_name];
 				}
 			}
-			
-		foreach (array() as $option_name) {
-			if (isset($_POST[$option_name]) && $_POST[$option_name] == "True") {
-				$options[$option_name] = true;
-			} elseif (isset($_POST[$option_name]) && $_POST[$option_name] == "False") {
-				$options[$option_name] = false;
-			}
-		}
-		
-		foreach (array() as $option_name) {
+					
+		foreach (array('disableonmobilebrowsers') as $option_name) {
 			if (isset($_POST[$option_name])) {
 				$options[$option_name] = true;
 			} else {
@@ -428,8 +430,12 @@ class modal_dialog_plugin {
 	
 	<table>
 		<tr>
-			<td>Number of Modal Dialogs</td>
+			<td style="width: 200px">Number of Modal Dialogs</td>
 			<td><input type="text" id="numberofmodaldialogs" name="numberofmodaldialogs" size="5" value="<?php echo $genoptions['numberofmodaldialogs']; ?>"/></td>
+		</tr>
+		<tr>
+			<td>Disable on mobile browsers</td>
+			<td><input type="checkbox" id="disableonmobilebrowsers" name="disableonmobilebrowsers" <?php if ($genoptions['disableonmobilebrowsers']) echo ' checked="checked" '; ?>/></td>
 		</tr>
 	</table>
 	

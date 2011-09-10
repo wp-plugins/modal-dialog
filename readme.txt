@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.3 =
+* Added option to disable modal dialog on mobile browsers
+
 = 2.2.5 =
 * Corrected problem with Activate option not working correctly
 
