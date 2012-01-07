@@ -171,6 +171,7 @@ class modal_dialog_plugin {
 		$options['displayfrequency'] = 1;
 		$options['showaftercommentposted'] = false;
 		$options['dialogclosingcallback'] = '';
+                $options['hidescrollbars'] = false;
 	
 		$configname = "MD_PP" . $confignumber;
 		update_option($configname, $options);
@@ -414,7 +415,7 @@ class modal_dialog_plugin {
 		}
 		
 		foreach (array('autosize', 'showfrontpage', 'forcepagelist', 'oncepersession', 'hideclosebutton', 'centeronscroll', 'manualcookiecreation',
-						'autoclose', 'checklogin', 'showaftercommentposted') as $option_name) {
+						'autoclose', 'checklogin', 'showaftercommentposted', 'hidescrollbars') as $option_name) {
 			if (isset($_POST[$option_name])) {
 				$options[$option_name] = true;
 			} else {
@@ -567,6 +568,10 @@ class modal_dialog_plugin {
 				<td><input type="checkbox" id="centeronscroll" name="centeronscroll" <?php if ($options['centeronscroll']) echo ' checked="checked" '; ?>/></td>
 				<td>Auto-Size Dialog</td>
 				<td><input type="checkbox" id="autosize" name="autosize" <?php if ($options['autosize']) echo ' checked="checked" '; ?>/></td>
+			</tr>
+                        <tr>
+				<td>Hide Scroll Bars</td>
+				<td><input type="checkbox" id="hidescrollbars" name="hidescrollbars" <?php if ($options['hidescrollbars']) echo ' checked="checked" '; ?>/></td>
 			</tr>
 			<tr>
 				<td>Dialog Width</td>
@@ -971,6 +976,11 @@ class modal_dialog_plugin {
 				{
 					$output .= "'centerOnScroll': true,\n";
 				}
+                                
+                                if ($options['hidescrollbars'] == true)
+				{
+					$output .= "'scrolling': 'no',\n";
+				}                                    
 				
 				if ($options['dialogclosingcallback'] != '')
 				{
