@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.3.2 =
+* Second fix to IE 7 check
+
 = 2.3.1 =
 * Fixed display logic code
 * Small correction to IE 7 if check for W3C validation
