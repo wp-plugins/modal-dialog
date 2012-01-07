@@ -22,6 +22,10 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.3.1 =
+* Fixed display logic code
+* Small correction to IE 7 if check for W3C validation
+
 = 2.3 =
 * Added option to disable modal dialog on mobile browsers
 
