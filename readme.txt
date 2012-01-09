@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.3.4 =
+* Fixed display count logic
+
 = 2.3.3 =
 * Added new option to force hiding of the scroll bars
 

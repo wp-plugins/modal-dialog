@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.3.2
+Version: 2.3.4
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -1021,6 +1021,10 @@ class modal_dialog_plugin {
 				
 				$output .= "\t{\n";
 				
+				if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '' && $options['showaftercommentposted'] == false)
+					$output .= 'if (cookievalue % ' . $options['displayfrequency'] . ' == 0) {\n';
+
+				
 				if ($options['manualcookiecreation'] == false)
 				{
 					$output .= "\t\tcookievalue++;\n";
@@ -1033,8 +1037,6 @@ class modal_dialog_plugin {
 					
 					$output .= ");\n";
 				}
-				if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '' && $options['showaftercommentposted'] == false)
-					$output .= 'if (cookievalue % ' . $options['displayfrequency'] . ' == 0) {';
 
 				$output .= "\t\tsetTimeout(\n";
 				$output .= "\t\t\tfunction(){\n";
