@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.3.4
+Version: 2.3.5
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -1016,14 +1016,33 @@ class modal_dialog_plugin {
 				}
 				
 				$output .= "\tvar cookievalue = jQuery.cookie('" . $options['cookiename'] . "');\n";
-				$output .= "\tif (cookievalue == null) cookievalue = 0;\n";
+                                
+                                if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '' && $options['showaftercommentposted'] == false)
+                                {
+                                    $output .= "\tvar cookiechecksvalue = jQuery.cookie('" . $options['cookiename'] . "_checks');\n";
+                                    $output .= "\tif (cookiechecksvalue == null) cookiechecksvalue = 0;\n";
+                                }
+                                    
+				$output .= "\tif (cookievalue == null) cookievalue = 0;\n";                          
+                                
 				$output .= "\tif (cookievalue < " . $options['numberoftimes'] . ")\n";
 				
 				$output .= "\t{\n";
 				
 				if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '' && $options['showaftercommentposted'] == false)
-					$output .= 'if (cookievalue % ' . $options['displayfrequency'] . ' == 0) {\n';
-
+                                {
+                                    $output .= "\t\tcookiechecksvalue++;\n";
+                                    $output .= "\t\tjQuery.cookie('" . $options['cookiename'] . "_checks', cookiechecksvalue";
+                                    
+                                    if ($options['cookieduration'] > 0)
+						$output .= ", { expires: " . $options['cookieduration'] .  ", path: '/'}";
+					else
+						$output .= ", { path: '/' }";
+					
+					$output .= ");\n";                                    
+                                    
+                                    $output .= "\t\tif (cookiechecksvalue % " . $options['displayfrequency'] . " == 0) {\n";
+                                }
 				
 				if ($options['manualcookiecreation'] == false)
 				{

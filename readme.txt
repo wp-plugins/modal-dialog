@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.3.5 =
+* Second fix to display logic count when selecting a display period and a maximum number of displays
+
 = 2.3.4 =
 * Fixed display count logic
 
