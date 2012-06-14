@@ -3,7 +3,7 @@ Contributors: jackdewey
 Donate link: http://yannickcorner.nayanna.biz/wordpress-plugins/modal-dialog/
 Tags: modal, dialog, pop-up, window, multiple
 Requires at least: 2.8
-Tested up to: 3.2.1
+Tested up to: 3.4
 Stable tag: trunk
 
 The purpose of this plugin is to allow users to create one or more modal dialog(s) / pop-up window(s) that will appear when a user visits their site. The number of times that these can load is configurable. They can load content from external sites or custom HTML code into the dialog.
@@ -21,6 +21,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 1. Dialogs can also be assigned to posts/pages within the editor
 
 == Changelog ==
+
+= 2.3.6 =
+* Fixed compatibility issue with WP 3.4 related to jQuery queuing call
 
 = 2.3.5 =
 * Second fix to display logic count when selecting a display period and a maximum number of displays

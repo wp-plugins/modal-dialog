@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.3.5
+Version: 2.3.6
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -58,7 +58,7 @@ class modal_dialog_plugin {
 		add_action('edit_post', array($this, 'md_editsave_post_field'));
 		add_action('save_post', array($this, 'md_editsave_post_field'));
 		
-		$this->modal_dialog_init();
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		
 		$genoptions = get_option('MD_General');
 
@@ -1091,7 +1091,7 @@ class modal_dialog_plugin {
 		}
 	}
 	
-	public function modal_dialog_init()
+	public function enqueue_scripts()
 	{
 		wp_enqueue_script('jquery');
 		wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.pack.js", "", "1.3.1");
