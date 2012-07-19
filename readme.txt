@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.3.7 =
+* Fixed "Delete all cookies" button on admin page
+
 = 2.3.6 =
 * Fixed compatibility issue with WP 3.4 related to jQuery queuing call
 
