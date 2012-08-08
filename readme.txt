@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.3.8 =
+* Added option field to specify pages where the dialog should NOT be shown
+
 = 2.3.7 =
 * Fixed "Delete all cookies" button on admin page
 

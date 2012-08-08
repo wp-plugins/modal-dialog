@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.3.7
+Version: 2.3.8
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -134,18 +134,18 @@ class modal_dialog_plugin {
 		return $columns;
 	}
 	
-	function modal_dialog_default_config($confignumber) {
+	function modal_dialog_default_config( $confignumber ) {
 	
 		$options['dialogname'] = 'Default';
-		$options['contentlocation'] = "URL";
-		$options['dialogtext'] = "Example Dialog Text";
+		$options['contentlocation'] = 'URL';
+		$options['dialogtext'] = 'Example Dialog Text';
 		$options['active'] = true;
 		$options['cookieduration'] = 365;
-		$options['contenturl'] = "http://www.google.com";
-		$options['pages'] = "";
-		$options['overlaycolor'] = "#00CC00";
-		$options['textcolor'] = "#000000";
-		$options['backgroundcolor'] = "#FFFFFF";
+		$options['contenturl'] = 'http://www.google.com';
+		$options['pages'] = '';
+		$options['overlaycolor'] = '#00CC00';
+		$options['textcolor'] = '#000000';
+		$options['backgroundcolor'] = '#FFFFFF';
 		$options['delay'] = 2000;
 		$options['dialogwidth'] = 900;
 		$options['dialogheight'] = 700;
@@ -155,9 +155,9 @@ class modal_dialog_plugin {
 		$options['autosize'] = false;
 		$options['showfrontpage'] = false;
 		
-		if ($confignumber == 1)
+		if ( $confignumber == 1 )
 			$options['forcepagelist'] = false;
-		elseif ($confignumber > 1)
+		elseif ( $confignumber > 1 )
 			$options['forcepagelist'] = true;
 			
 		$options['sessioncookiename'] = 'modal-dialog-session';
@@ -172,7 +172,8 @@ class modal_dialog_plugin {
 		$options['displayfrequency'] = 1;
 		$options['showaftercommentposted'] = false;
 		$options['dialogclosingcallback'] = '';
-                $options['hidescrollbars'] = false;
+        $options['hidescrollbars'] = false;
+        $options['excludepages'] = '';
 	
 		$configname = "MD_PP" . $confignumber;
 		update_option($configname, $options);
@@ -399,9 +400,9 @@ class modal_dialog_plugin {
 		$configname = 'MD_PP' . $configid;
 		$options = get_option($configname);
 				
-		foreach (array('dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
+		foreach ( array( 'dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
 				'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'sessioncookiename', 'overlayopacity',
-				'autoclosetime', 'dialogname', 'displayfrequency', 'dialogclosingcallback') as $option_name) {
+				'autoclosetime', 'dialogname', 'displayfrequency', 'dialogclosingcallback', 'excludepages' ) as $option_name ) {
 				if (isset($_POST[$option_name])) {
 					$options[$option_name] = $_POST[$option_name];
 				}
@@ -600,6 +601,10 @@ class modal_dialog_plugin {
 				<td>Pages and posts to display Modal Dialog (empty for all, comma-separated IDs)</td>
 				<td colspan=3><input type="text" id="pages" name="pages" size="120" value="<?php echo $options['pages']; ?>"/></td>
 			</tr>
+			<tr>
+				<td>Pages and posts not to display dialog on</td>
+				<td colspan=3><input type="text" id="excludepages" name="excludepages" size="120" value="<?php echo $options['excludepages']; ?>"/></td>
+			</tr>            
 			<tr>
 				<td>Display after new comment posted</td>
 				<td><input type="checkbox" id="showaftercommentposted" name="showaftercommentposted" <?php if ($options['showaftercommentposted'] == true) echo ' checked="checked" '; ?>/></td>
@@ -833,97 +838,103 @@ class modal_dialog_plugin {
 		}
 	}
 	
-	function modal_dialog_footer($manualdisplay = false) {		
+	function modal_dialog_footer( $manualdisplay = false ) {
 		global $post;
 		$thePostID = $post->ID;
 		
 		wp_reset_query();
-		
-		if (isset($_GET['showmodaldialog']))
-		{
+        
+        if ( isset( $_GET['showmodaldialog'] ) ) {
 			$display = true;
 			$dialogid = $_GET['showmodaldialog'];
-		}
-		elseif ($post->ID != '')
-		{
-			$dialogid = get_post_meta($post->ID, "modal-dialog-id", true);
-			if ($dialogid != "" && $dialogid != 0)
-			{
+		} elseif ( $post->ID != '' ) {
+			$dialogid = get_post_meta($post->ID, 'modal-dialog-id', true);
+			if ($dialogid != '' && $dialogid != 0) {
 				$display = true;
-			}
-			elseif ($dialogid == "")
-				$display = false;
-		}
-		else
-		{
+			} elseif ( $dialogid == '' ) {
+                $display = false;
+            }				
+		} else {
 			$display = false;
 		}
 		
-		if ($display == false)
-		{
-			$genoptions = get_option('MD_General');
+        $genoptions = get_option('MD_General');
 
-			for ($counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter++) {
-				$optionsname = "MD_PP" . $counter;
-				$options = get_option($optionsname);
-				
-				if (($options['checklogin'] == false || $options['checklogin'] == '') || ($options['checklogin'] == true && !is_user_logged_in()))
-				{
-					if (($options['active'] || $manualdisplay) && !is_admin())
-					{
-						if ($options['showfrontpage'])
-						{
-							if (is_front_page())
-							{
-								$display = true;	
-								$dialogid = $counter;
-							}
-							else
-								$display = false;
-						}			
-						elseif ($options['forcepagelist'] == true)
-						{
-							if ($options['pages'] != '')
-							{
-								$pagelist = explode(',', $options['pages']);
+        for ($counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter++) {
+            $optionsname = "MD_PP" . $counter;
+            $options = get_option($optionsname);
 
-								if ($pagelist)		
-									foreach ($pagelist as $pageid)
-									{
-										if ( is_page(intval($pageid)) || is_single($pageid) )
-										{
-											$display = true;
-											$dialogid = $counter;
-											break 2;
-										}
-										else
-											$display = false;
-									}
-							}
-						}
-						elseif ($manualdisplay == true)
-							$display = true;					
-					}
-				}
-				else
-					$display = false;
-			}
+            if (($options['checklogin'] == false || $options['checklogin'] == '') || ($options['checklogin'] == true && !is_user_logged_in())) {
+                if ( ( $options['active'] || $manualdisplay ) && !is_admin() ) {
+                    if ( $options['showfrontpage'] ) {
+                        if ( is_front_page() ) {
+                            $display = true;	
+                            $dialogid = $counter;
+                        } else {
+                            $display = false;
+                        }
+                    } elseif ( $options['forcepagelist'] == true ) {
+                        if ( $options['pages'] != '' ) {
+                            $pagelist = explode(',', $options['pages']);
 
-			if ($display == false)
-			{
-				$primaryoptions = get_option('MD_PP1');
-				
-				if (($primaryoptions['checklogin'] == false || $options['checklogin'] == '') || ($primaryoptions['checklogin'] == true && !is_user_logged_in()))
-				{
-					if ($primaryoptions['forcepagelist'] == false)
-					{
-						$display = true;
-						$dialogid = 1;
-					}
-				}
-			}
-		}
-	
+                            if ($pagelist) {
+                                foreach ($pagelist as $pageid) {
+                                    if ( is_page(intval($pageid)) || is_single($pageid) ) {
+                                        $display = true;
+                                        $dialogid = $counter;
+                                        break 2;
+                                    } else {
+                                        $display = false;
+                                    }
+                                }
+                            }
+                        }
+                    } elseif ( $manualdisplay == true ) {
+                        $display = true;
+                    }
+
+                    if ( !empty( $options['excludepages'] ) ) {
+                        $exclude_page_list = explode( ',', $options['excludepages'] );
+
+                        if ( $exclude_page_list ) {
+                            foreach ( $exclude_page_list as $excluded_page_id ) {
+                                if ( is_page( intval( $excluded_page_id ) ) || is_single( $excluded_page_id ) ) {
+                                    $display = false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+                $display = false;
+        }
+
+        
+        if ($display == false)
+        {
+            $primaryoptions = get_option('MD_PP1');
+
+            if ( ( $primaryoptions['checklogin'] == false || $options['checklogin'] == '' ) || ( $primaryoptions['checklogin'] == true && !is_user_logged_in() ) ) {
+                if ( $primaryoptions['forcepagelist'] == false ) {
+                    $display = true;
+                    $dialogid = 1;
+                }
+            }
+            
+            if ( !empty( $primaryoptions['excludepages'] ) ) {
+                $exclude_page_list = explode( ',', $primaryoptions['excludepages'] );
+
+                if ( $exclude_page_list ) {
+                    foreach ( $exclude_page_list as $excluded_page_id ) {
+                        if ( is_page( intval( $excluded_page_id ) ) || is_single( $excluded_page_id ) ) {
+                            $display = false;
+                        }
+                    }
+                }
+            }
+        }
+        
 		if ($display == true && $dialogid != 0)
 		{
 			global $wpdb;
