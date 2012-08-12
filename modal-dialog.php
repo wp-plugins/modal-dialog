@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.3.8
+Version: 2.3.9
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -866,13 +866,11 @@ class modal_dialog_plugin {
 
             if (($options['checklogin'] == false || $options['checklogin'] == '') || ($options['checklogin'] == true && !is_user_logged_in())) {
                 if ( ( $options['active'] || $manualdisplay ) && !is_admin() ) {
-                    if ( $options['showfrontpage'] ) {
-                        if ( is_front_page() ) {
-                            $display = true;	
-                            $dialogid = $counter;
-                        } else {
-                            $display = false;
-                        }
+                    if ( $options['showfrontpage'] && is_front_page() ) {
+                        $display = true;	
+                        $dialogid = $counter;
+                    } elseif ( $options['showfrontpage'] == false && is_front_page() ) {
+                        $display = false;
                     } elseif ( $options['forcepagelist'] == true ) {
                         if ( $options['pages'] != '' ) {
                             $pagelist = explode(',', $options['pages']);
@@ -916,7 +914,7 @@ class modal_dialog_plugin {
             $primaryoptions = get_option('MD_PP1');
 
             if ( ( $primaryoptions['checklogin'] == false || $options['checklogin'] == '' ) || ( $primaryoptions['checklogin'] == true && !is_user_logged_in() ) ) {
-                if ( $primaryoptions['forcepagelist'] == false ) {
+                if ( $primaryoptions['forcepagelist'] == false && !is_front_page()) {
                     $display = true;
                     $dialogid = 1;
                 }
