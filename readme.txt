@@ -22,6 +22,10 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.4 =
+* Re-wrote dialog display decision code to be cleaner
+* Upgraded fancybox to version 1.3.4
+
 = 2.3.9 =
 * Changed Show on front page option to control display on front page whether or not the "Only show on specific pages and single posts"
 

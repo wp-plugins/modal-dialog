@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.3.9
+Version: 2.4
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -699,7 +699,7 @@ class modal_dialog_plugin {
 	}
 	
 	function modal_dialog_admin_header() {
-		echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.css'/>\n";
+		echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.4.css'/>\n";
 		echo "<!-- [if lt IE 7] -->\n";
 		echo "<style type='text/css'>\n";
 		
@@ -730,209 +730,147 @@ class modal_dialog_plugin {
 	function modal_dialog_header($manualdisplay = false) {
 		global $post;
 		$thePostID = $post->ID;
+        $display = false;
 		
-		if (isset($_GET['showmodaldialog']))
-		{
+		if ( isset( $_GET['showmodaldialog'] ) ) {
 			$display = true;
-		}
-		elseif ($post->ID != '')
-		{
-			$dialogid = get_post_meta($post->ID, "modal-dialog-id", true);
-			if ($dialogid != "" && $dialogid != 0)
+		} elseif ( !empty( $thePostID ) ) {
+			$dialogid = get_post_meta( $post->ID, "modal-dialog-id", true );
+			if ( !empty( $dialogid ) && $dialogid != 0 )
 				$display = true;
-			elseif ($dialogid == "")
-				$display = false;
-		}
-		else
-		{
-			$display = false;
 		}
 
 		if ($display == false)
 		{
 			$genoptions = get_option('MD_General');
 
-			for ($counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter++) {
-				$optionsname = "MD_PP" . $counter;
-				$options = get_option($optionsname);
-				
-				if (($options['checklogin'] == false || $options['checklogin'] == '') || ($options['checklogin'] == true && !is_user_logged_in()))
-				{
-					if (($options['active'] || $manualdisplay) && !is_admin())
-					{
-						if ($options['showfrontpage'])
-						{
-							if (is_front_page())
-								$display = true;		
-							else
-								$display = false;
-						}			
-						elseif ($options['forcepagelist'] == true)
-						{
-							if ($options['pages'] != '')
-							{
-								$pagelist = explode(',', $options['pages']);
+			 for ( $counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter++ ) {
+                $dialogid = $counter;
+                $optionsname = "MD_PP" . $counter;
+                $options = get_option( $optionsname );
 
-								if ($pagelist)		
-									foreach ($pagelist as $pageid)
-									{
-										if ( is_page(intval($pageid)) || is_single($pageid) )
-										{
-											$display = true;
-											break 2;
-										}
-										else
-											$display = false;
-									}
-							}
-						}
-						elseif ($manualdisplay == true)
-							$display = true;
-					}
-				}
-				else
-					$display = false;
-			}
+                if ( $options['checklogin'] == false || $options['checklogin'] == '' || ( $options['checklogin'] == true && !is_user_logged_in() ) ) {
+                    if ( ( $options['active'] || $manualdisplay ) && !is_admin() ) {
+                        if ( $options['showfrontpage'] && is_front_page() ) {
+                            $display = true;	
+                            break;
+                        } elseif ( $options['showfrontpage'] == false && is_front_page() ) {
+                            $display = false;
+                        } elseif ( $options['forcepagelist'] == true ) {
+                            if ( $options['pages'] != '' ) {
+                                $pagelist = explode(',', $options['pages']);
 
-			if ($display == false)
-			{
-				$primaryoptions = get_option('MD_PP1');
+                                if ($pagelist) {
+                                    foreach ($pagelist as $pageid) {
+                                        if ( is_page(intval($pageid)) || is_single($pageid) ) {
+                                            $display = true;
+                                            break 2;
+                                        } else {
+                                            $display = false;
+                                        }
+                                    }
+                                }
+                            }
+                        } elseif ( $options['forcepagelist'] == false && !is_front_page() ) {
+                            $display = true;
+                        } elseif ( $manualdisplay == true ) {
+                            $display = true;
+                        }
 
-				if (($primaryoptions['checklogin'] == false || $primaryoptions['checklogin'] == '') || ($primaryoptions['checklogin'] == true && !is_user_logged_in()))
-				{
-					if ($primaryoptions['forcepagelist'] == false)
-						$display = true;
-				}
-			}
-		}
-		
-		
-		if ($display == true)
-		{
-			echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.css'/>\n";
-			echo "<!-- [if lt IE 7] -->\n";
-			echo "<style type='text/css'>\n";
-			
-			echo "/* IE */\n";
-			echo "#fancybox-loading.fancybox-ie div	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_loading.png', sizingMethod='scale'); }\n";
-			echo ".fancybox-ie #fancybox-close		{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_close.png', sizingMethod='scale'); }\n";
-			echo ".fancybox-ie #fancybox-title-over	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_title_over.png', sizingMethod='scale'); zoom: 1; }\n";
-			echo ".fancybox-ie #fancybox-title-left	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_title_left.png', sizingMethod='scale'); }\n";
-			echo ".fancybox-ie #fancybox-title-main	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_title_main.png', sizingMethod='scale'); }\n";
-			echo ".fancybox-ie #fancybox-title-right	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_title_right.png', sizingMethod='scale'); }\n";
-			echo ".fancybox-ie #fancybox-left-ico		{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_nav_left.png', sizingMethod='scale'); }\n";
-			echo ".fancybox-ie #fancybox-right-ico	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_nav_right.png', sizingMethod='scale'); }\n";
-			echo ".fancybox-ie .fancy-bg { background: transparent !important; }\n";
-			
-			echo ".fancybox-ie #fancy-bg-n	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_n.png', sizingMethod='scale'); }\n";
-			echo ".fancybox-ie #fancy-bg-ne	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_ne.png', sizingMethod='scale'); }\n";
-			echo ".fancybox-ie #fancy-bg-e	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_e.png', sizingMethod='scale'); }\n";
-			echo ".fancybox-ie #fancy-bg-se	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_se.png', sizingMethod='scale'); }\n";
-			echo ".fancybox-ie #fancy-bg-s	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_s.png', sizingMethod='scale'); }\n";
-			echo ".fancybox-ie #fancy-bg-sw	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_sw.png', sizingMethod='scale'); }\n";
-			echo ".fancybox-ie #fancy-bg-w	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_w.png', sizingMethod='scale'); }\n";
-			echo ".fancybox-ie #fancy-bg-nw	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_nw.png', sizingMethod='scale'); }\n";
-			
-			echo "</style>";
-			echo "<!-- [endif] -->\n";
-		}
-	}
-	
-	function modal_dialog_footer( $manualdisplay = false ) {
-		global $post;
-		$thePostID = $post->ID;
-		
-		wp_reset_query();
-        
-        if ( isset( $_GET['showmodaldialog'] ) ) {
-			$display = true;
-			$dialogid = $_GET['showmodaldialog'];
-		} elseif ( $post->ID != '' ) {
-			$dialogid = get_post_meta($post->ID, 'modal-dialog-id', true);
-			if ($dialogid != '' && $dialogid != 0) {
-				$display = true;
-			} elseif ( $dialogid == '' ) {
-                $display = false;
-            }				
-		} else {
-			$display = false;
-		}
-		
-        $genoptions = get_option('MD_General');
+                        if ( !empty( $options['excludepages'] ) ) {
+                            $exclude_page_list = explode( ',', $options['excludepages'] );
 
-        for ($counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter++) {
-            $optionsname = "MD_PP" . $counter;
-            $options = get_option($optionsname);
-
-            if (($options['checklogin'] == false || $options['checklogin'] == '') || ($options['checklogin'] == true && !is_user_logged_in())) {
-                if ( ( $options['active'] || $manualdisplay ) && !is_admin() ) {
-                    if ( $options['showfrontpage'] && is_front_page() ) {
-                        $display = true;	
-                        $dialogid = $counter;
-                    } elseif ( $options['showfrontpage'] == false && is_front_page() ) {
-                        $display = false;
-                    } elseif ( $options['forcepagelist'] == true ) {
-                        if ( $options['pages'] != '' ) {
-                            $pagelist = explode(',', $options['pages']);
-
-                            if ($pagelist) {
-                                foreach ($pagelist as $pageid) {
-                                    if ( is_page(intval($pageid)) || is_single($pageid) ) {
-                                        $display = true;
-                                        $dialogid = $counter;
-                                        break 2;
-                                    } else {
+                            if ( $exclude_page_list ) {
+                                foreach ( $exclude_page_list as $excluded_page_id ) {
+                                    if ( is_page( intval( $excluded_page_id ) ) || is_single( $excluded_page_id ) ) {
                                         $display = false;
                                     }
                                 }
                             }
                         }
-                    } elseif ( $manualdisplay == true ) {
-                        $display = true;
                     }
+                }
+                else
+                    $display = false;
+            }
+		}
+		
+		
+		if ($display == true)
+            $this->modal_dialog_admin_header();
+	}
+	
+	function modal_dialog_footer( $manualdisplay = false ) {
+		global $post;
+		$thePostID = $post->ID;
+        $display = false;
+		
+		wp_reset_query();
+        
+		if ( isset( $_GET['showmodaldialog'] ) ) {
+			$display = true;
+            $dialogid = $_GET['showmodaldialog'];
+		} elseif ( !empty( $thePostID ) ) {
+			$dialogid = get_post_meta( $post->ID, "modal-dialog-id", true );
+			if ( !empty( $dialogid ) && $dialogid != 0 )
+				$display = true;
+            else
+                $dialogid = 1;
+		}
+		
+        if ( $display == false ) {
+            $genoptions = get_option( 'MD_General' );
+            for ( $counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter++ ) {
+                $dialogid = $counter;
+                $optionsname = "MD_PP" . $counter;
+                $options = get_option( $optionsname );
 
-                    if ( !empty( $options['excludepages'] ) ) {
-                        $exclude_page_list = explode( ',', $options['excludepages'] );
+                if ( $options['checklogin'] == false || $options['checklogin'] == '' || ( $options['checklogin'] == true && !is_user_logged_in() ) ) {
+                    if ( ( $options['active'] || $manualdisplay ) && !is_admin() ) {
+                        if ( $options['showfrontpage'] && is_front_page() ) {
+                            $display = true;	
+                            break;
+                        } elseif ( $options['showfrontpage'] == false && is_front_page() ) {
+                            $display = false;
+                        } elseif ( $options['forcepagelist'] == true ) {
+                            if ( $options['pages'] != '' ) {
+                                $pagelist = explode(',', $options['pages']);
 
-                        if ( $exclude_page_list ) {
-                            foreach ( $exclude_page_list as $excluded_page_id ) {
-                                if ( is_page( intval( $excluded_page_id ) ) || is_single( $excluded_page_id ) ) {
-                                    $display = false;
+                                if ($pagelist) {
+                                    foreach ($pagelist as $pageid) {
+                                        if ( is_page(intval($pageid)) || is_single($pageid) ) {
+                                            $display = true;
+                                            break 2;
+                                        } else {
+                                            $display = false;
+                                        }
+                                    }
+                                }
+                            }
+                        } elseif ( $options['forcepagelist'] == false && !is_front_page() ) {
+                            $display = true;
+                        } elseif ( $manualdisplay == true ) {
+                            $display = true;
+                        }
+
+                        if ( !empty( $options['excludepages'] ) ) {
+                            $exclude_page_list = explode( ',', $options['excludepages'] );
+
+                            if ( $exclude_page_list ) {
+                                foreach ( $exclude_page_list as $excluded_page_id ) {
+                                    if ( is_page( intval( $excluded_page_id ) ) || is_single( $excluded_page_id ) ) {
+                                        $display = false;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            else
-                $display = false;
-        }
-
-        
-        if ($display == false)
-        {
-            $primaryoptions = get_option('MD_PP1');
-
-            if ( ( $primaryoptions['checklogin'] == false || $options['checklogin'] == '' ) || ( $primaryoptions['checklogin'] == true && !is_user_logged_in() ) ) {
-                if ( $primaryoptions['forcepagelist'] == false && !is_front_page()) {
-                    $display = true;
-                    $dialogid = 1;
-                }
-            }
-            
-            if ( !empty( $primaryoptions['excludepages'] ) ) {
-                $exclude_page_list = explode( ',', $primaryoptions['excludepages'] );
-
-                if ( $exclude_page_list ) {
-                    foreach ( $exclude_page_list as $excluded_page_id ) {
-                        if ( is_page( intval( $excluded_page_id ) ) || is_single( $excluded_page_id ) ) {
-                            $display = false;
-                        }
-                    }
-                }
+                else
+                    $display = false;
             }
         }
-        
+
 		if ($display == true && $dialogid != 0)
 		{
 			global $wpdb;
@@ -1104,7 +1042,7 @@ class modal_dialog_plugin {
 	public function enqueue_scripts()
 	{
 		wp_enqueue_script('jquery');
-		wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.1.pack.js", "", "1.3.1");
+		wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.4.pack.js", "", "1.3.4");
 		wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/cookie.js", "", "1.0");
 	}
 	
