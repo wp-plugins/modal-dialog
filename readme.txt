@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.4.3 =
+* Forcing close button to appear when it is intended to be displayed
+
 = 2.4.2 =
 * Changed to new mobile browser detection library that is more frequently updated
 

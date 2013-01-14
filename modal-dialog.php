@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.4.2
+Version: 2.4.3
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -915,10 +915,11 @@ class modal_dialog_plugin {
 					$output .= "'hideOnContentClick': false,\n";	
 				}
 				
-				if ($options['hideclosebutton'] == true)
-				{
+				if ( $options['hideclosebutton'] == true ) {
 					$output .= "'showCloseButton': false,\n";
-				}
+				} else {
+                    $output .= "'showCloseButton': true,\n";
+                }                    
 				
 				if ($options['centeronscroll'] == true)
 				{
