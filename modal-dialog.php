@@ -69,9 +69,9 @@ class modal_dialog_plugin {
 			
 			if ($genoptions['disableonmobilebrowsers'] == true)
 			{
-				require_once(ABSPATH . '/wp-content/plugins/modal-dialog/mdetect.php');
-				$browserchecker = new uagent_info();
-				$mobilebrowser = $browserchecker->DetectMobileQuick();
+				require_once(ABSPATH . '/wp-content/plugins/modal-dialog/Mobile_Detect.php');
+				$detect = new Mobile_Detect;
+				$mobilebrowser = $detect->isMobile();
 			}
 			
 			if ($options['active'] == true)
