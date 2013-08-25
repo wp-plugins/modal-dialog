@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.4.7 =
+* Modified a few option checks to make sure that dialog works even if some options are missing
+
 = 2.4.6 =
 * Correct problem with update redirecting to github page
 

@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.4.6
+Version: 2.4.7
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -895,135 +895,136 @@ class modal_dialog_plugin {
 			
 			$output .= "<div id='md-content'>\n";
 			
-				$output .= "<script type=\"text/javascript\">\n";
-					
-				$output .= "jQuery(document).ready(function() {\n";
-				
-				if ($options['contentlocation'] == 'Inline')
-					$output .= "jQuery(\"a#inline\").fancybox({\n";
-				elseif ($options['contentlocation'] == 'URL')
-					$output .= "jQuery(\"a.iframe\").fancybox({\n";
-					
-				if ($options['exitmethod'] == 'onlyexitbutton')
-				{
-					$output .= "'hideOnOverlayClick': false,\n";
-					$output .= "'hideOnContentClick': false,\n";	
-				}
-				elseif ($options['exitmethod'] == 'anywhere')
-				{
-					$output .= "'hideOnOverlayClick': true,\n";
-					$output .= "'hideOnContentClick': false,\n";	
-				}
-				
-				if ( $options['hideclosebutton'] == true ) {
-					$output .= "'showCloseButton': false,\n";
-				} else {
-                    $output .= "'showCloseButton': true,\n";
-                }                    
-				
-				if ($options['centeronscroll'] == true)
-				{
-					$output .= "'centerOnScroll': true,\n";
-				}
-                                
-                                if ($options['hidescrollbars'] == true)
-				{
-					$output .= "'scrolling': 'no',\n";
-				}                                    
-				
-				if ($options['dialogclosingcallback'] != '')
-				{
-					$output .= "'onClosed': function() {" . $options['dialogclosingcallback']. "},\n";
-				}
-				
-				if ($options['autosize'] == true)
-					$output .= "'autoDimensions': true,\n";
-				elseif ($options['autosize'] == false)
-					$output .= "'autoDimensions': false,\n";
-					
-				if ($options['sessioncookiename'] != '')
-					$sessioncookiename = $options['sessioncookiename'];
-				else
-					$sessioncookiename = 'modaldialogsession';
-					
-				$output .= "'overlayColor': '" . $options['overlaycolor'] . "',\n";
-				$output .= "'width': " . $options['dialogwidth'] . ",\n";
-				$output .= "'height': " . $options['dialogheight'] . ",\n";
-				
-				if ($options['overlayopacity'] == '') $options['overlayopacity'] = '0.3';
-				
-				$output .= "'overlayOpacity': " . $options['overlayopacity'] . "\n";
-				$output .= "});\n";
+            $output .= "<script type=\"text/javascript\">\n";
 
-				if ($options['oncepersession'] == true)
-				{
-					$output .= "var sessioncookie = jQuery.cookie('" . $sessioncookiename . "');\n";
-					$output .= "if (sessioncookie == null)\n";
-					$output .= "{\n";
-					if ($options['manualcookiecreation'] == false)
-						$output .= "\tjQuery.cookie('" . $sessioncookiename . "', 0, { path: '/' });\n";
-				}
-				
-				$output .= "\tvar cookievalue = jQuery.cookie('" . $options['cookiename'] . "');\n";
-                                
-                                if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '' && $options['showaftercommentposted'] == false)
-                                {
-                                    $output .= "\tvar cookiechecksvalue = jQuery.cookie('" . $options['cookiename'] . "_checks');\n";
-                                    $output .= "\tif (cookiechecksvalue == null) cookiechecksvalue = 0;\n";
-                                }
-                                    
-				$output .= "\tif (cookievalue == null) cookievalue = 0;\n";                          
-                                
-				$output .= "\tif (cookievalue < " . $options['numberoftimes'] . ")\n";
-				
-				$output .= "\t{\n";
-				
-				if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '' && $options['showaftercommentposted'] == false)
-                                {
-                                    $output .= "\t\tcookiechecksvalue++;\n";
-                                    $output .= "\t\tjQuery.cookie('" . $options['cookiename'] . "_checks', cookiechecksvalue";
-                                    
-                                    if ($options['cookieduration'] > 0)
-						$output .= ", { expires: " . $options['cookieduration'] .  ", path: '/'}";
-					else
-						$output .= ", { path: '/' }";
-					
-					$output .= ");\n";                                    
-                                    
-                                    $output .= "\t\tif (cookiechecksvalue % " . $options['displayfrequency'] . " == 0) {\n";
-                                }
-				
-				if ($options['manualcookiecreation'] == false)
-				{
-					$output .= "\t\tcookievalue++;\n";
-					$output .= "\t\tjQuery.cookie('" . $options['cookiename'] . "', cookievalue";
-					
-					if ($options['cookieduration'] > 0)
-						$output .= ", { expires: " . $options['cookieduration'] .  ", path: '/'}";
-					else
-						$output .= ", { path: '/' }";
-					
-					$output .= ");\n";
-				}
+            $output .= "jQuery(document).ready(function() {\n";
 
-				$output .= "\t\tsetTimeout(\n";
-				$output .= "\t\t\tfunction(){\n";
-				
-				if ($options['contentlocation'] == 'Inline')
-					$output .= "\t\t\t\tjQuery(\"a#inline\").trigger('click')\n";
-				elseif ($options['contentlocation'] == 'URL')
-					$output .= "\t\t\t\tjQuery(\"a.iframe\").trigger('click')\n";
-					
-				$output .= "\t\t\t}, " . $options['delay'] . ");\n";
-				$output .= "\t\t};\n";
-				
-				if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '' && $options['showaftercommentposted'] == false)
-					$output .= '}';
-				
-				if ($options['oncepersession'] == true)
-				{
-					$output .= "\t}\n";
-				}
+            if ( $options['contentlocation'] == 'Inline' || empty( $options['contentlocation'] ) )
+                $output .= "jQuery(\"a#inline\").fancybox({\n";
+            elseif ($options['contentlocation'] == 'URL')
+                $output .= "jQuery(\"a.iframe\").fancybox({\n";
+
+            if ($options['exitmethod'] == 'onlyexitbutton')
+            {
+                $output .= "'hideOnOverlayClick': false,\n";
+                $output .= "'hideOnContentClick': false,\n";
+            }
+            elseif ($options['exitmethod'] == 'anywhere')
+            {
+                $output .= "'hideOnOverlayClick': true,\n";
+                $output .= "'hideOnContentClick': false,\n";
+            }
+
+            if ( $options['hideclosebutton'] == true ) {
+                $output .= "'showCloseButton': false,\n";
+            } else {
+                $output .= "'showCloseButton': true,\n";
+            }
+
+            if ($options['centeronscroll'] == true)
+            {
+                $output .= "'centerOnScroll': true,\n";
+            }
+
+            if ($options['hidescrollbars'] == true)
+            {
+                $output .= "'scrolling': 'no',\n";
+            }
+
+            if ($options['dialogclosingcallback'] != '')
+            {
+                $output .= "'onClosed': function() {" . $options['dialogclosingcallback']. "},\n";
+            }
+
+            if ( $options['autosize'] == true || empty( $options['autosize'] ) )
+                $output .= "'autoDimensions': true,\n";
+            elseif ($options['autosize'] == false)
+                $output .= "'autoDimensions': false,\n";
+
+            if ( $options['sessioncookiename'] != '' )
+                $sessioncookiename = $options['sessioncookiename'];
+            else
+                $sessioncookiename = 'modaldialogsession';
+
+            $output .= "'overlayColor': '" . $options['overlaycolor'] . "',\n";
+            $output .= "'width': " . $options['dialogwidth'] . ",\n";
+            $output .= "'height': " . $options['dialogheight'] . ",\n";
+
+            if ($options['overlayopacity'] == '') $options['overlayopacity'] = '0.3';
+
+            $output .= "'overlayOpacity': " . $options['overlayopacity'] . "\n";
+            $output .= "});\n";
+
+            if ($options['oncepersession'] == true)
+            {
+                $output .= "var sessioncookie = jQuery.cookie('" . $sessioncookiename . "');\n";
+                $output .= "if (sessioncookie == null)\n";
+                $output .= "{\n";
+                if ($options['manualcookiecreation'] == false)
+                    $output .= "\tjQuery.cookie('" . $sessioncookiename . "', 0, { path: '/' });\n";
+            }
+
+            $output .= "\tvar cookievalue = jQuery.cookie('" . $options['cookiename'] . "');\n";
+
+            if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '' && $options['showaftercommentposted'] == false)
+            {
+                $output .= "\tvar cookiechecksvalue = jQuery.cookie('" . $options['cookiename'] . "_checks');\n";
+                $output .= "\tif (cookiechecksvalue == null) cookiechecksvalue = 0;\n";
+            }
+
+            $output .= "\tif (cookievalue == null) cookievalue = 0;\n";
+
+            $output .= "\tif (cookievalue < " . $options['numberoftimes'] . ")\n";
+
+            $output .= "\t{\n";
+
+            if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '' && $options['showaftercommentposted'] == false)
+            {
+                $output .= "\t\tcookiechecksvalue++;\n";
+                $output .= "\t\tjQuery.cookie('" . $options['cookiename'] . "_checks', cookiechecksvalue";
+
+                if ($options['cookieduration'] > 0)
+    $output .= ", { expires: " . $options['cookieduration'] .  ", path: '/'}";
+else
+    $output .= ", { path: '/' }";
+
+$output .= ");\n";
+
+                $output .= "\t\tif (cookiechecksvalue % " . $options['displayfrequency'] . " == 0) {\n";
+            }
+
+            if ($options['manualcookiecreation'] == false)
+            {
+                $output .= "\t\tcookievalue++;\n";
+                $output .= "\t\tjQuery.cookie('" . $options['cookiename'] . "', cookievalue";
+
+                if ($options['cookieduration'] > 0)
+                    $output .= ", { expires: " . $options['cookieduration'] .  ", path: '/'}";
+                else
+                    $output .= ", { path: '/' }";
+
+                $output .= ");\n";
+            }
+
+            $output .= "\t\tsetTimeout(\n";
+            $output .= "\t\t\tfunction(){\n";
+
+            if ( $options['contentlocation'] == 'Inline' || empty( $options['contentlocation'] ) ) {
+                $output .= "\t\t\t\tjQuery(\"a#inline\").trigger('click')\n";
+            } elseif ($options['contentlocation'] == 'URL') {
+                $output .= "\t\t\t\tjQuery(\"a.iframe\").trigger('click')\n";
+            }
+
+            $output .= "\t\t\t}, " . $options['delay'] . ");\n";
+            $output .= "\t\t};\n";
+
+            if ($options['displayfrequency'] != 1 && $options['displayfrequency'] != '' && $options['showaftercommentposted'] == false)
+                $output .= '}';
+
+            if ($options['oncepersession'] == true)
+            {
+                $output .= "\t}\n";
+            }
 			
 			$output .= "});\n";
 			if ($options['autoclose'] == true && $options['autoclosetime'] != 0)
