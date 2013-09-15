@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.4.8 =
+* Renamed Mobile Detect library to make name unique and avoid conflicts with other plugins using the same library
+
 = 2.4.7 =
 * Modified a few option checks to make sure that dialog works even if some options are missing
 
