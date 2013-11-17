@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.4.8
+Version: 2.4.9
 Author: Yannick Lefebvre
 Author URI: http://yannickcorner.nayanna.biz   
 Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
@@ -32,9 +32,6 @@ class modal_dialog_plugin {
 
 	//constructor of class, PHP4 compatible construction for backward compatibility
 	function modal_dialog_plugin() {
-
-		$this->mdpluginpath = WP_CONTENT_URL.'/plugins/'.plugin_basename(dirname(__FILE__)).'/';		
-		load_plugin_textdomain( 'modal-dialog', $this->mdpluginpath . '/languages', 'modal-dialog/languages');
 
 		$options = get_option('MD_PP');
 		$genoptions = get_option('MD_General');
@@ -229,7 +226,7 @@ class modal_dialog_plugin {
 	//extend the admin menu
 	function on_admin_menu() {
 		//add our own option page, you can also add it to different sections or use your own one
-		$this->pagehooktop = add_menu_page(__('Modal Dialog General Options', 'modal-dialog'), "Modal Dialog", 'manage_options', MODAL_DIALOG_ADMIN_PAGE_NAME, array($this, 'on_show_page'), $this->mdpluginpath . '/icons/ModalDialog16.png');
+		$this->pagehooktop = add_menu_page(__('Modal Dialog General Options', 'modal-dialog'), "Modal Dialog", 'manage_options', MODAL_DIALOG_ADMIN_PAGE_NAME, array($this, 'on_show_page'), plugins_url( 'icons/ModalDialog16.png', __FILE__ ) );
 		$this->pagehooksettings = add_submenu_page( MODAL_DIALOG_ADMIN_PAGE_NAME, __('Modal Dialog - Configurations', 'modal-dialog') , __('Configurations', 'modal-dialog'), 'manage_options', 'modal-dialog-configurations', array($this,'on_show_page'));
 		
 		//register  callback gets call prior your own page gets rendered
@@ -311,8 +308,8 @@ class modal_dialog_plugin {
 		$data['selectedevent'] = $selectedevent;
 		?>
 		<div id="modal-dialog-general" class="wrap">
-		<div class='icon32'><img src="<?php echo $this->mdpluginpath . '/icons/ModalDialog32.png'; ?>" /></div>
-		<h2><?php echo $pagetitle; ?><span style='padding-left: 50px'><a href="http://yannickcorner.nayanna.biz/wordpress-plugins/modal-dialog/" target="modaldialog"><img src="<?php echo $this->mdpluginpath; ?>/icons/btn_donate_LG.gif" /></a></span></h2>
+		<div class='icon32'><img src="<?php echo plugins_url( '/icons/ModalDialog32.png', __FILE__ ); ?>" /></div>
+		<h2><?php echo $pagetitle; ?><span style='padding-left: 50px'><a href="http://ylefebvre.ca/wordpress-plugins/modal-dialog/" target="modaldialog"><img src="<?php echo plugins_url( "/icons/btn_donate_LG.gif", __FILE__ ); ?>"/></a></span></h2>
 		<form action="admin-post.php" method="post" id='mdform' enctype='multipart/form-data'>
 			<?php wp_nonce_field('modal-dialog-general'); ?>
 			<?php wp_nonce_field('closedpostboxes', 'closedpostboxesnonce', false ); ?>
@@ -699,29 +696,29 @@ class modal_dialog_plugin {
 	}
 	
 	function modal_dialog_admin_header() {
-		echo "<link rel='stylesheet' type='text/css' media='screen' href='". WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.4.css'/>\n";
+		echo "<link rel='stylesheet' type='text/css' media='screen' href='". plugins_url( "fancybox/jquery.fancybox-1.3.4.css", __FILE__ ) . "'/>\n";
 		echo "<!-- [if lt IE 7] -->\n";
 		echo "<style type='text/css'>\n";
 		
 		echo "/*IE*/\n";
-		echo "#fancybox-loading.fancybox-ie div	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_loading.png', sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancybox-close		{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_close.png', sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancybox-title-over	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_title_over.png', sizingMethod='scale'); zoom: 1; }\n";
-		echo ".fancybox-ie #fancybox-title-left	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_title_left.png', sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancybox-title-main	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_title_main.png', sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancybox-title-right	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_title_right.png', sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancybox-left-ico		{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_nav_left.png', sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancybox-right-ico	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_nav_right.png', sizingMethod='scale'); }\n";
+		echo "#fancybox-loading.fancybox-ie div	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_loading.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
+		echo ".fancybox-ie #fancybox-close		{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_close.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
+		echo ".fancybox-ie #fancybox-title-over	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_title_over.png", __FILE__ ) . ", sizingMethod='scale'); zoom: 1; }\n";
+		echo ".fancybox-ie #fancybox-title-left	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_title_left.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
+		echo ".fancybox-ie #fancybox-title-main	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_title_main.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
+		echo ".fancybox-ie #fancybox-title-right	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_title_right.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
+		echo ".fancybox-ie #fancybox-left-ico		{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_nav_left.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
+		echo ".fancybox-ie #fancybox-right-ico	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_nav_right.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
 		echo ".fancybox-ie .fancy-bg { background: transparent !important; }\n";
 		
-		echo ".fancybox-ie #fancy-bg-n	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_n.png', sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancy-bg-ne	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_ne.png', sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancy-bg-e	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_e.png', sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancy-bg-se	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_se.png', sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancy-bg-s	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_s.png', sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancy-bg-sw	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_sw.png', sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancy-bg-w	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_w.png', sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancy-bg-nw	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . WP_PLUGIN_URL . "/modal-dialog/fancybox/fancy_shadow_nw.png', sizingMethod='scale'); }\n";
+		echo ".fancybox-ie #fancy-bg-n	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_n.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
+		echo ".fancybox-ie #fancy-bg-ne	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_ne.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
+		echo ".fancybox-ie #fancy-bg-e	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_e.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
+		echo ".fancybox-ie #fancy-bg-se	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_se.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
+		echo ".fancybox-ie #fancy-bg-s	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_s.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
+		echo ".fancybox-ie #fancy-bg-sw	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_sw.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
+		echo ".fancybox-ie #fancy-bg-w	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_w.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
+		echo ".fancybox-ie #fancy-bg-nw	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_nw.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
 		
 		echo "</style>";
 		echo "<!-- [endif] -->\n";
@@ -1044,13 +1041,13 @@ $output .= ");\n";
 	public function enqueue_scripts()
 	{
 		wp_enqueue_script('jquery');
-		wp_enqueue_script('fancyboxpack', WP_PLUGIN_URL . "/modal-dialog/fancybox/jquery.fancybox-1.3.4.pack.js", "", "1.3.4");
-		wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/cookie.js", "", "1.0");
+		wp_enqueue_script('fancyboxpack', plugins_url( "fancybox/jquery.fancybox-1.3.4.pack.js", __FILE__ ), "", "1.3.4");
+		wp_enqueue_script('jquerycookies', plugins_url( "cookie.js", __FILE__ ), "", "1.0");
 	}
 	
 	public function admin_enqueue_scripts()
 	{
-		wp_enqueue_script('jquerycookies', WP_PLUGIN_URL . "/modal-dialog/cookie.js", "", "1.0");
+		wp_enqueue_script('jquerycookies', plugins_url( "cookie.js", __FILE__ ), "", "1.0");
 	}
 }
 
