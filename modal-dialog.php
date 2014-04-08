@@ -1,11 +1,11 @@
 <?php
 /* Plugin Name: Modal Dialog
-Plugin URI: http://yannickcorner.nayanna.biz/modal-dialog/
+Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 2.4.9
+Version: 2.5
 Author: Yannick Lefebvre
-Author URI: http://yannickcorner.nayanna.biz   
-Copyright 2011  Yannick Lefebvre  (email : ylefebvre@gmail.com)    
+Author URI: http://ylefebvre.ca
+Copyright 2014  Yannick Lefebvre  (email : ylefebvre@gmail.com)
 
 This program is free software; you can redistribute it and/or modify   
 it under the terms of the GNU General Public License as published by    
@@ -31,7 +31,7 @@ require_once(ABSPATH . '/wp-admin/includes/template.php');
 class modal_dialog_plugin {
 
 	//constructor of class, PHP4 compatible construction for backward compatibility
-	function modal_dialog_plugin() {
+	public function __construct() {
 
 		$options = get_option('MD_PP');
 		$genoptions = get_option('MD_General');
@@ -47,18 +47,18 @@ class modal_dialog_plugin {
 		//register the callback been used if options of page been submitted and needs to be processed
 		add_action('admin_post_save_modal_dialog_general', array($this, 'on_save_changes_general'));
 		add_action('admin_post_save_modal_dialog_configurations', array($this, 'on_save_changes_configurations'));
-		
-		// Add addition section to Post/Page Edition page
-		add_meta_box ('modaldialog_meta_box', __('Modal Dialog', 'modal-dialog'), array($this, 'md_post_edit_extra'), 'post', 'normal', 'high');
-		add_meta_box ('modaldialog_meta_box', __('Modal Dialog', 'modal-dialog'), array($this, 'md_post_edit_extra'), 'page', 'normal', 'high');
+
+        add_action( 'add_meta_boxes', array( $this, 'add_post_meta_boxes' ) );
 		
 		add_action('edit_post', array($this, 'md_editsave_post_field'));
 		add_action('save_post', array($this, 'md_editsave_post_field'));
 		
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
-		
-		$genoptions = get_option('MD_General');
+
+        add_filter( 'modal_dialog_content', 'do_shortcode', 11 );
+
+        $genoptions = get_option('MD_General');
 
 		for ($counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter++) {
 			$optionsname = "MD_PP" . $counter;
@@ -75,22 +75,26 @@ class modal_dialog_plugin {
 			{
 				if ($genoptions['disableonmobilebrowsers'] == false || ($genoptions['disableonmobilebrowsers'] == true && $mobilebrowser == false))
 				{
-				add_action('wp_footer', array($this, 'modal_dialog_footer'));
-				add_action('wp_head', array($this, 'modal_dialog_header'));
-				break;
+                    add_action( 'wp_head', array( &$this, 'modal_dialog_header' ), 1 );
+                    add_action( 'wp_footer', array( &$this, 'modal_dialog_footer' ), 1000 );
+                    break;
 				}
 			}
 		}
 		
-		add_action('admin_head', array($this, 'modal_dialog_admin_header'));
-		
-		add_action('comment_post_redirect', array($this, 'comment_redirect_filter'), 10, 2);
-		
+		add_action( 'comment_post_redirect', array( $this, 'comment_redirect_filter' ), 10, 2 );
+
 		register_activation_hook(__FILE__, array($this, 'md_install'));
 		register_deactivation_hook(__FILE__, array($this, 'md_uninstall'));
 		
 		return $this;
 	}
+
+    function add_post_meta_boxes( $post_type, $post ) {
+        // Add addition section to Post/Page Edition page
+        add_meta_box ('modaldialog_meta_box', __('Modal Dialog', 'modal-dialog'), array($this, 'md_post_edit_extra'), 'post', 'normal', 'high');
+        add_meta_box ('modaldialog_meta_box', __('Modal Dialog', 'modal-dialog'), array($this, 'md_post_edit_extra'), 'page', 'normal', 'high');
+    }
 	
 	function comment_redirect_filter($location, $comment) {
 		$genoptions = get_option('MD_General');
@@ -257,7 +261,9 @@ class modal_dialog_plugin {
 		global $screen_layout_columns;
 		global $wpdb;
 		
-		$genoptions = get_option('MD_General');	
+		$genoptions = get_option('MD_General');
+
+        $config = '';
 		
 		if ( isset($_GET['config']) && $config == '') {
 			$config = $_GET['config'];
@@ -285,7 +291,7 @@ class modal_dialog_plugin {
 			$pagetitle = __('Modal Dialog Configurations', 'modal-dialog');
 			$formvalue = 'save_modal_dialog_configurations';
 
-			if ($_GET['message'] == '1')
+			if (isset( $_GET['message'] ) && $_GET['message'] == '1')
 				echo '<div id="message" class="updated fade"><p><strong>' . __('Modal Dialog Configuration Updated', 'modal-dialog') . ' (#' . $config . ')</strong></div>';
 		}
 		
@@ -302,10 +308,6 @@ class modal_dialog_plugin {
 		$data['options'] = $options;
 		$data['config'] = $config;
 		$data['genoptions'] = $genoptions;
-		$data['mode'] = $mode;
-		$data['selectedcat'] = $selectedcat;
-		$data['selectedvenue'] = $selectedvenue;
-		$data['selectedevent'] = $selectedevent;
 		?>
 		<div id="modal-dialog-general" class="wrap">
 		<div class='icon32'><img src="<?php echo plugins_url( '/icons/ModalDialog32.png', __FILE__ ); ?>" /></div>
@@ -518,7 +520,7 @@ class modal_dialog_plugin {
 			<table>
 			<tr>
 				<td style='vertical-align: top; width: 250px'>Dialog Contents</td>
-				<td colspan=3><TEXTAREA id="dialogtext" NAME="dialogtext" COLS=100 ROWS=10><?php echo wp_specialchars(stripslashes($options['dialogtext'])); ?></TEXTAREA>
+				<td colspan=3><TEXTAREA id="dialogtext" NAME="dialogtext" COLS=100 ROWS=10><?php echo esc_html(stripslashes($options['dialogtext'])); ?></TEXTAREA>
 				</td>
 			</tr>
 			<tr>
@@ -694,36 +696,7 @@ class modal_dialog_plugin {
 		if (isset($_POST['dialogid']))
 			update_post_meta($post_id, "modal-dialog-id", $_POST['dialogid']);
 	}
-	
-	function modal_dialog_admin_header() {
-		echo "<link rel='stylesheet' type='text/css' media='screen' href='". plugins_url( "fancybox/jquery.fancybox-1.3.4.css", __FILE__ ) . "'/>\n";
-		echo "<!-- [if lt IE 7] -->\n";
-		echo "<style type='text/css'>\n";
-		
-		echo "/*IE*/\n";
-		echo "#fancybox-loading.fancybox-ie div	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_loading.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancybox-close		{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_close.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancybox-title-over	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_title_over.png", __FILE__ ) . ", sizingMethod='scale'); zoom: 1; }\n";
-		echo ".fancybox-ie #fancybox-title-left	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_title_left.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancybox-title-main	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_title_main.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancybox-title-right	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_title_right.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancybox-left-ico		{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_nav_left.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancybox-right-ico	{ background: transparent; filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_nav_right.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		echo ".fancybox-ie .fancy-bg { background: transparent !important; }\n";
-		
-		echo ".fancybox-ie #fancy-bg-n	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_n.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancy-bg-ne	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_ne.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancy-bg-e	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_e.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancy-bg-se	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_se.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancy-bg-s	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_s.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancy-bg-sw	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_sw.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancy-bg-w	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_w.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		echo ".fancybox-ie #fancy-bg-nw	{ filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" . plugins_url( "fancybox/fancy_shadow_nw.png", __FILE__ ) . ", sizingMethod='scale'); }\n";
-		
-		echo "</style>";
-		echo "<!-- [endif] -->\n";
-	}
-	
+
 	function modal_dialog_header($manualdisplay = false) {
 		global $post;
 		$thePostID = $post->ID;
@@ -792,10 +765,24 @@ class modal_dialog_plugin {
             }
 		}
 		
-		
-		if ($display == true)
-            $this->modal_dialog_admin_header();
 	}
+
+    function hex2rgb($hex) {
+        $hex = str_replace("#", "", $hex);
+
+        if(strlen($hex) == 3) {
+            $r = hexdec(substr($hex,0,1).substr($hex,0,1));
+            $g = hexdec(substr($hex,1,1).substr($hex,1,1));
+            $b = hexdec(substr($hex,2,1).substr($hex,2,1));
+        } else {
+            $r = hexdec(substr($hex,0,2));
+            $g = hexdec(substr($hex,2,2));
+            $b = hexdec(substr($hex,4,2));
+        }
+        $rgb = array($r, $g, $b);
+        //return implode(",", $rgb); // returns the rgb values separated by commas
+        return $rgb; // returns an array with the rgb values
+    }
 	
 	function modal_dialog_footer( $manualdisplay = false ) {
 		global $post;
@@ -871,27 +858,27 @@ class modal_dialog_plugin {
 		if ($display == true && $dialogid != 0)
 		{
 			global $wpdb;
-			
+
 			$optionsname = "MD_PP" . $dialogid;
 			$options = get_option($optionsname);
-						
+
 			$output = "<!-- Modal Dialog Output -->\n";
 			
 			if ($options['contentlocation'] == 'Inline')
 			{
 				$output .= "<a id=\"inline\" href=\"#data\"></a>\n";
 				$output .= "<div style=\"display:none\"><div id=\"data\" style=\"color:" . $options['textcolor']. ";background-color:" . $options['backgroundcolor'] . ";width:100%;height:100%\">";
-				$output .= stripslashes(do_shortcode($options['dialogtext']));
-				
+				$output .= apply_filters( 'modal_dialog_content' , stripslashes( $options['dialogtext'] ) );
+
 				$output .= "</div></div>\n";
 			}
 			elseif ($options['contentlocation'] == "URL")
 			{
-				$output .= "<a href='" . $options['contenturl']. "' class='iframe'></a>\n";
+				$output .= "<a href='" . $options['contenturl']. "' class='fancybox fancybox.iframe' data-fancybox-type='iframe'></a>\n";
 			}
 			
 			$output .= "<div id='md-content'>\n";
-			
+
             $output .= "<script type=\"text/javascript\">\n";
 
             $output .= "jQuery(document).ready(function() {\n";
@@ -899,28 +886,40 @@ class modal_dialog_plugin {
             if ( $options['contentlocation'] == 'Inline' || empty( $options['contentlocation'] ) )
                 $output .= "jQuery(\"a#inline\").fancybox({\n";
             elseif ($options['contentlocation'] == 'URL')
-                $output .= "jQuery(\"a.iframe\").fancybox({\n";
+                $output .= "jQuery(\".fancybox\").fancybox({\n";
+
+            $output .= "'afterclose': function() {\n";
+
+            if ( $options['contentlocation'] == 'Inline' || empty( $options['contentlocation'] ) )
+                $output .= "\tjQuery(\"a#inline\").show();\n";
+            elseif ($options['contentlocation'] == 'URL')
+                $output .= "\tjQuery(\".fancybox\").show();\n";
+
+            $output .= "},";
+
+            if ( $options['backgroundcolor'] ) {
+                $output .= "'beforeLoad': function() {\n";
+                $output .= "jQuery('.fancybox-inner #data').css('background-color: " . $options['backgroundcolor'] . "');";
+                $output .= "},";
+            }
+
 
             if ($options['exitmethod'] == 'onlyexitbutton')
             {
-                $output .= "'hideOnOverlayClick': false,\n";
-                $output .= "'hideOnContentClick': false,\n";
+                $output .= "'closeClick': false,\n";
             }
             elseif ($options['exitmethod'] == 'anywhere')
             {
-                $output .= "'hideOnOverlayClick': true,\n";
-                $output .= "'hideOnContentClick': false,\n";
+                $output .= "'closeClick': true,\n";
             }
 
             if ( $options['hideclosebutton'] == true ) {
-                $output .= "'showCloseButton': false,\n";
-            } else {
-                $output .= "'showCloseButton': true,\n";
+                $output .= "'closeBtn': false,\n";
             }
 
-            if ($options['centeronscroll'] == true)
+            if ($options['centeronscroll'] == false)
             {
-                $output .= "'centerOnScroll': true,\n";
+                $output .= "'autoCenter': false,\n";
             }
 
             if ($options['hidescrollbars'] == true)
@@ -930,26 +929,42 @@ class modal_dialog_plugin {
 
             if ($options['dialogclosingcallback'] != '')
             {
-                $output .= "'onClosed': function() {" . $options['dialogclosingcallback']. "},\n";
+                $output .= "'beforeClose': function() {" . $options['dialogclosingcallback']. "},\n";
             }
 
-            if ( $options['autosize'] == true || empty( $options['autosize'] ) )
-                $output .= "'autoDimensions': true,\n";
-            elseif ($options['autosize'] == false)
-                $output .= "'autoDimensions': false,\n";
+            if ( $options['autosize'] == true )
+                $output .= "'autoSize': true,\n";
+            elseif ($options['autosize'] == false || empty( $options['autosize']) )
+                $output .= "'autoSize': false,\n";
 
             if ( $options['sessioncookiename'] != '' )
                 $sessioncookiename = $options['sessioncookiename'];
             else
                 $sessioncookiename = 'modaldialogsession';
 
-            $output .= "'overlayColor': '" . $options['overlaycolor'] . "',\n";
+            if ( empty ( $options['overlaycolor'] ) ) {
+                $options['overlaycolor'] = "rgba(200, 200, 200, " . ( empty( $options['overlayopacity'] ) ? '0.3' : $options['overlayopacity'] ) . ")";
+            } else {
+                $colorarray = $this->hex2rgb( $options['overlaycolor'] );
+
+                $options['overlaycolor'] = "rgba(" . $colorarray[0] . ", " . $colorarray[1] . ", " . $colorarray[2] . ", " . ( empty( $options['overlayopacity'] ) ? '0.3' : $options['overlayopacity'] ) . ")";
+            }
+
+            if ( !empty( $options['overlaycolor'] ) ) {
+                $output .= "'helpers' : {\n";
+                $output .= "'overlay' : {\n";
+                $output .= "'css' : {\n";
+
+                $output .= "'background': '" . $options['overlaycolor'] . "',\n";
+
+                $output .= "}\n";
+                $output .= "}\n";
+                $output .= "},\n";
+            }
+
             $output .= "'width': " . $options['dialogwidth'] . ",\n";
             $output .= "'height': " . $options['dialogheight'] . ",\n";
 
-            if ($options['overlayopacity'] == '') $options['overlayopacity'] = '0.3';
-
-            $output .= "'overlayOpacity': " . $options['overlayopacity'] . "\n";
             $output .= "});\n";
 
             if ($options['oncepersession'] == true)
@@ -1009,7 +1024,7 @@ $output .= ");\n";
             if ( $options['contentlocation'] == 'Inline' || empty( $options['contentlocation'] ) ) {
                 $output .= "\t\t\t\tjQuery(\"a#inline\").trigger('click')\n";
             } elseif ($options['contentlocation'] == 'URL') {
-                $output .= "\t\t\t\tjQuery(\"a.iframe\").trigger('click')\n";
+                $output .= "\t\t\t\tjQuery(\".fancybox\").trigger('click')\n";
             }
 
             $output .= "\t\t\t}, " . $options['delay'] . ");\n";
@@ -1041,8 +1056,12 @@ $output .= ");\n";
 	public function enqueue_scripts()
 	{
 		wp_enqueue_script('jquery');
-		wp_enqueue_script('fancyboxpack', plugins_url( "fancybox/jquery.fancybox-1.3.4.pack.js", __FILE__ ), "", "1.3.4");
+		wp_enqueue_script('fancyboxpack', plugins_url( "fancybox2/jquery.fancybox-2.1.5.pack.js", __FILE__ ), "", "2.1.5");
+        wp_enqueue_style('fancyboxstyle', plugins_url( "fancybox2/jquery.fancybox.css", __FILE__ ), "", "2.1.5" );
+        wp_enqueue_script('fancyboxbuttons', plugins_url( "fancybox2/helpers/jquery.fancybox-buttons-2.1.5.js", __FILE__ ), "", "2.1.5");
+        wp_enqueue_style('fancyboxbuttonsstyle', plugins_url( "fancybox2/helpers/jquery.fancybox-buttons-2.1.5.css", __FILE__ ), "", "2.1.5" );
 		wp_enqueue_script('jquerycookies', plugins_url( "cookie.js", __FILE__ ), "", "1.0");
+
 	}
 	
 	public function admin_enqueue_scripts()

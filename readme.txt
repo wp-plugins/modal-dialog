@@ -22,6 +22,11 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.5 =
+* Upgrade of pop-up script to fancybox2
+* Fixes problem with pop-up content going away if opened multiple times
+* Adds support for Contact Form 7
+
 = 2.4.9 =
 * Updated code to support web site running on SSL connections
 
