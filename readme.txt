@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 2.5.1 =
+* Reverted to version 2.4.9 code since fancybox2 is not compliant with WP licensing terms. Will work on a new version to reintroduce 2.5 functionality.
+
 = 2.5 =
 * Upgrade of pop-up script to fancybox2
 * Fixes problem with pop-up content going away if opened multiple times
