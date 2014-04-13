@@ -3,7 +3,7 @@ Contributors: jackdewey
 Donate link: http://yannickcorner.nayanna.biz/wordpress-plugins/modal-dialog/
 Tags: modal, dialog, pop-up, window, multiple
 Requires at least: 2.8
-Tested up to: 3.8
+Tested up to: 3.8.2
 Stable tag: trunk
 
 The purpose of this plugin is to allow users to create one or more modal dialog(s) / pop-up window(s) that will appear when a user visits their site. The number of times that these can load is configurable. They can load content from external sites or custom HTML code into the dialog.
@@ -21,6 +21,14 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 1. Dialogs can also be assigned to posts/pages within the editor
 
 == Changelog ==
+
+= 3.0 =
+* New FAQ section
+* New utility functions to open and close the dialog through javascript code (modal_dialog_open() and modal_dialog_close())
+* Restored support for Contact Form 7
+* Included new pop-up script (colorbox)
+* Option to revert back to legacy fancybox pop-up script (Under Modal Dialog General Settings)
+* Fixes problem with pop-up content going away if opened multiple times (in colorbox mode)
 
 = 2.5.1 =
 * Reverted to version 2.4.9 code since fancybox2 is not compliant with WP licensing terms. Will work on a new version to reintroduce 2.5 functionality.
