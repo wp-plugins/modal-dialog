@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 3.0.1 =
+* Fix PHP warnings
+
 = 3.0 =
 * New FAQ section
 * New utility functions to open and close the dialog through javascript code (modal_dialog_open() and modal_dialog_close())
