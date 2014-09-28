@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 3.0.2 =
+* Added new option to ignore esc key to close the dialog
+
 = 3.0.1 =
 * Fix PHP warnings
 
