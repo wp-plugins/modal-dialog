@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 3.0.4 =
+* Set default active value to false for multisite installations
+
 = 3.0.3 =
 * Fix issue with page jump on dialog exit in some browsers
 
