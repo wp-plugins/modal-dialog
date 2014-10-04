@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.0.2
+Version: 3.0.3
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2014  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -1270,9 +1270,11 @@ class modal_dialog_plugin {
 				if ( $options['contentlocation'] == 'Inline' || empty( $options['contentlocation'] ) ) {
 					$output .= "jQuery(\"a.inline\").colorbox({\n";
 					$output .= "inline: true,";
+					$output .= "returnFocus: false,";
 				} elseif ( $options['contentlocation'] == 'URL' ) {
 					$output .= "jQuery(\"a.iframe\").colorbox({\n";
 					$output .= "iframe: true,";
+					$output .= "returnFocus: false,";
 				}
 
 				if ( $options['exitmethod'] == 'onlyexitbutton' ) {
