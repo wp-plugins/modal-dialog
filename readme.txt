@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 3.0.6 =
+* Corrected issue with new mobile detection library
+
 = 3.0.5 =
 * Updated Mobile Detect library
 
