@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.0.6
+Version: 3.0.7
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2014  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -1261,8 +1261,8 @@ class modal_dialog_plugin {
 				}
 
 				$output .= "'overlayColor': '" . $options['overlaycolor'] . "',\n";
-				$output .= "'width': " . $options['dialogwidth'] . ",\n";
-				$output .= "'height': " . $options['dialogheight'] . ",\n";
+				$output .= "'width': '" . $options['dialogwidth'] . "',\n";
+				$output .= "'height': '" . $options['dialogheight'] . "',\n";
 
 				if ( $options['overlayopacity'] == '' ) {
 					$options['overlayopacity'] = '0.3';
@@ -1316,8 +1316,8 @@ class modal_dialog_plugin {
 					$output .= "width: '80%',\n";
 					$output .= "height: '80%',\n";
 				} else {
-					$output .= "width: " . $options['dialogwidth'] . ",\n";
-					$output .= "height: " . $options['dialogheight'] . ",\n";
+					$output .= "width: '" . $options['dialogwidth'] . "',\n";
+					$output .= "height: '" . $options['dialogheight'] . "',\n";
 				}
 
 				if ( $options['sessioncookiename'] != '' ) {
