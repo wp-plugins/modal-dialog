@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.0.7
+Version: 3.0.8
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2014  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -65,7 +65,7 @@ class modal_dialog_plugin {
 			$options     = get_option( $optionsname );
 
 			if ( $genoptions['disableonmobilebrowsers'] == true ) {
-				require_once( ABSPATH . '/wp-content/plugins/modal-dialog/Mobile_Detect.php' );
+				require_once( plugin_dir_path( __FILE__ ) . '/Mobile_Detect.php' );
 				$detect        = new MD_Mobile_Detect;
 				$mobilebrowser = $detect->isMobile();
 			}
