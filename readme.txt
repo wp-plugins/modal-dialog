@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 3.0.9 =
+* Added new option to allow admin to give access to other user levels to the Modal Dialog configuration dialog
+
 = 3.0.8 =
 * Fix to support plugins installed in directory other than default
 

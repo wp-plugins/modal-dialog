@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.0.8
+Version: 3.0.9
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2014  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -26,6 +26,41 @@ define( 'MODAL_DIALOG_ADMIN_PAGE_NAME', 'modal-dialog' );
 define( 'MDDIR', dirname( __FILE__ ) . '/' );
 
 require_once( ABSPATH . '/wp-admin/includes/template.php' );
+
+global $accesslevelcheck;
+$accesslevelcheck = '';
+
+$genoptions = get_option( 'MD_General' );
+
+if ( !isset( $genoptions['accesslevel'] ) || empty( $genoptions['accesslevel'] ) ) {
+	$genoptions['accesslevel'] = 'admin';
+}
+
+switch ( $genoptions['accesslevel'] ) {
+	case 'admin':
+		$accesslevelcheck = 'manage_options';
+		break;
+
+	case 'editor':
+		$accesslevelcheck = 'manage_categories';
+		break;
+
+	case 'author':
+		$accesslevelcheck = 'publish_posts';
+		break;
+
+	case 'contributor':
+		$accesslevelcheck = 'edit_posts';
+		break;
+
+	case 'subscriber':
+		$accesslevelcheck = 'read';
+		break;
+
+	default:
+		$accesslevelcheck = 'manage_options';
+		break;
+}
 
 //class that reperesent the complete plugin
 class modal_dialog_plugin {
@@ -154,6 +189,7 @@ class modal_dialog_plugin {
 		$options['dialogheight']    = 700;
 		$options['cookiename']      = 'modal-dialog';
 		$options['numberoftimes']   = 1;
+		$options['countermode']     = 'timestodisplay';
 		$options['exitmethod']      = 'onlyexitbutton';
 		$options['autosize']        = false;
 		$options['showfrontpage']   = false;
@@ -204,6 +240,7 @@ class modal_dialog_plugin {
 			$genoptions['numberofmodaldialogs']    = 1;
 			$genoptions['primarydialog']           = 1;
 			$genoptions['disableonmobilebrowsers'] = false;
+			$genoptions['accesslevel']             = 'admin';
 
 			update_option( 'MD_General', $genoptions );
 		}
@@ -231,9 +268,10 @@ class modal_dialog_plugin {
 	//extend the admin menu
 	function on_admin_menu() {
 		//add our own option page, you can also add it to different sections or use your own one
-		$this->pagehooktop      = add_menu_page( __( 'Modal Dialog General Options', 'modal-dialog' ), "Modal Dialog", 'manage_options', MODAL_DIALOG_ADMIN_PAGE_NAME, array( $this, 'on_show_page' ), plugins_url( 'icons/ModalDialog16.png', __FILE__ ) );
-		$this->pagehooksettings = add_submenu_page( MODAL_DIALOG_ADMIN_PAGE_NAME, __( 'Modal Dialog - Configurations', 'modal-dialog' ), __( 'Configurations', 'modal-dialog' ), 'manage_options', 'modal-dialog-configurations', array( $this, 'on_show_page' ) );
-		$this->pagehookfaq      = add_submenu_page( MODAL_DIALOG_ADMIN_PAGE_NAME, __( 'Modal Dialog - FAQ', 'modal-dialog' ), __( 'FAQ', 'modal-dialog' ), 'manage_options', 'modal-dialog-faq', array( $this, 'on_show_page' ) );
+		global $accesslevelcheck;
+		$this->pagehooktop      = add_menu_page( __( 'Modal Dialog General Options', 'modal-dialog' ), "Modal Dialog", $accesslevelcheck, MODAL_DIALOG_ADMIN_PAGE_NAME, array( $this, 'on_show_page' ), plugins_url( 'icons/ModalDialog16.png', __FILE__ ) );
+		$this->pagehooksettings = add_submenu_page( MODAL_DIALOG_ADMIN_PAGE_NAME, __( 'Modal Dialog - Configurations', 'modal-dialog' ), __( 'Configurations', 'modal-dialog' ), $accesslevelcheck, 'modal-dialog-configurations', array( $this, 'on_show_page' ) );
+		$this->pagehookfaq      = add_submenu_page( MODAL_DIALOG_ADMIN_PAGE_NAME, __( 'Modal Dialog - FAQ', 'modal-dialog' ), __( 'FAQ', 'modal-dialog' ), $accesslevelcheck, 'modal-dialog-faq', array( $this, 'on_show_page' ) );
 
 		//register  callback gets call prior your own page gets rendered
 		add_action( 'load-' . $this->pagehooktop, array( &$this, 'on_load_page' ) );
@@ -361,7 +399,8 @@ class modal_dialog_plugin {
 	//executed if the post arrives initiated by pressing the submit button of form
 	function on_save_changes_general() {
 		//user permission check
-		if ( !current_user_can( 'manage_options' ) ) {
+		global $accesslevelcheck;
+		if ( !current_user_can( $accesslevelcheck ) ) {
 			wp_die( __( 'Cheatin&#8217; uh?' ) );
 		}
 		//cross check the given referer
@@ -369,7 +408,7 @@ class modal_dialog_plugin {
 
 		$options = get_option( 'MD_General' );
 
-		foreach ( array( 'numberofmodaldialogs', 'primarydialog', 'popupscript' ) as $option_name ) {
+		foreach ( array( 'numberofmodaldialogs', 'primarydialog', 'popupscript', 'accesslevel' ) as $option_name ) {
 			if ( isset( $_POST[$option_name] ) ) {
 				$options[$option_name] = $_POST[$option_name];
 			}
@@ -392,7 +431,8 @@ class modal_dialog_plugin {
 	//executed if the post arrives initiated by pressing the submit button of form
 	function on_save_changes_configurations() {
 		//user permission check
-		if ( !current_user_can( 'manage_options' ) ) {
+		global $accesslevelcheck;
+		if ( !current_user_can( $accesslevelcheck ) ) {
 			wp_die( __( 'Cheatin&#8217; uh?' ) );
 		}
 		//cross check the given referer
@@ -411,7 +451,7 @@ class modal_dialog_plugin {
 			array(
 				'dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
 				'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'sessioncookiename', 'overlayopacity',
-				'autoclosetime', 'dialogname', 'displayfrequency', 'dialogclosingcallback', 'excludepages'
+				'autoclosetime', 'dialogname', 'displayfrequency', 'dialogclosingcallback', 'excludepages', 'countermode'
 			) as $option_name
 		) {
 			if ( isset( $_POST[$option_name] ) ) {
@@ -457,6 +497,27 @@ class modal_dialog_plugin {
 					<input type="text" id="numberofmodaldialogs" name="numberofmodaldialogs" size="5" value="<?php echo $genoptions['numberofmodaldialogs']; ?>" />
 				</td>
 			</tr>
+			<?php if (current_user_can( 'manage_options' )) { ?>
+			<tr>
+				<td style='width:200px'>Access level required</td>
+				<td>
+					<?php } ?>
+					<select <?php if ( !current_user_can( 'manage_options' ) ) {
+						echo 'style="display: none"';
+					} ?> id="accesslevel" name="accesslevel">
+						<?php $levels = array( 'admin' => 'Administrator', 'editor' => 'Editor', 'author' => 'Author', 'contributor' => 'Contributor', 'subscriber' => 'Subscriber' );
+						if ( !isset( $genoptions['accesslevel'] ) || empty( $genoptions['accesslevel'] ) ) {
+							$genoptions['accesslevel'] = 'admin';
+						}
+
+						foreach ( $levels as $key => $level ) {
+							echo '<option value="' . $key . '" ' . selected( $genoptions['accesslevel'], $key, false ) . '>' . $level . '</option>';
+						} ?>
+					</select>
+					<?php if (current_user_can( 'manage_options' )) { ?>
+				</td>
+			</tr>
+		<?php } ?>
 			<tr>
 				<td>Disable on mobile browsers</td>
 				<td>
@@ -587,9 +648,19 @@ class modal_dialog_plugin {
 				</td>
 			</tr>
 			<tr>
-				<td>Number of times to display modal dialog</td>
+				<td>Number of times to display / before displaying modal dialog </td>
 				<td>
 					<input type="text" id="numberoftimes" name="numberoftimes" size="4" value="<?php echo $options['numberoftimes']; ?>" />
+				</td>
+			</tr>
+			<tr>
+				<td>Counter Mode</td>
+				<td>
+					<?php if ( empty( $options['countermode'] ) ) { $options['countermode'] = 'timestodisplay'; } ?>
+					<select name="countermode" id="countermode" style="width:200px;">
+						<option value="timestodisplay" <?php selected( $options['countermode'] == 'timestodisplay' ); ?>>Display x Times</option>
+						<option value="timesbeforedisplay" <?php selected ( $options['countermode'] == 'timesbeforedisplay' ) ?>>Display after x Views</option>
+					</select>
 				</td>
 			</tr>
 			<tr>
@@ -1353,7 +1424,19 @@ class modal_dialog_plugin {
 
 			$output .= "\tif (cookievalue == null) cookievalue = 0;\n";
 
-			$output .= "\tif (cookievalue < " . $options['numberoftimes'] . ")\n";
+			$output .= "\tif (cookievalue ";
+
+			if ( empty( $options['countermode'] ) ) {
+				$options['countermode'] = 'timestodisplay';
+			}
+
+			if ( $options['countermode'] == 'timestodisplay' ) {
+				$output .= ' < ';
+			} elseif ( $options['countermode'] == 'timesbeforedisplay' ) {
+				$output .= ' > ';
+			}
+
+			$output .= $options['numberoftimes'] . ")\n";
 
 			$output .= "\t{\n";
 
