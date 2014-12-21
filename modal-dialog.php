@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.0.9
+Version: 3.1
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2014  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -32,7 +32,7 @@ $accesslevelcheck = '';
 
 $genoptions = get_option( 'MD_General' );
 
-if ( !isset( $genoptions['accesslevel'] ) || empty( $genoptions['accesslevel'] ) ) {
+if ( ! isset( $genoptions['accesslevel'] ) || empty( $genoptions['accesslevel'] ) ) {
 	$genoptions['accesslevel'] = 'admin';
 }
 
@@ -126,8 +126,14 @@ class modal_dialog_plugin {
 
 	function add_post_meta_boxes() {
 		// Add addition section to Post/Page Edition page
-		add_meta_box( 'modaldialog_meta_box', __( 'Modal Dialog', 'modal-dialog' ), array( $this, 'md_post_edit_extra' ), 'post', 'normal', 'high' );
-		add_meta_box( 'modaldialog_meta_box', __( 'Modal Dialog', 'modal-dialog' ), array( $this, 'md_post_edit_extra' ), 'page', 'normal', 'high' );
+		add_meta_box( 'modaldialog_meta_box', __( 'Modal Dialog', 'modal-dialog' ), array(
+			$this,
+			'md_post_edit_extra'
+		), 'post', 'normal', 'high' );
+		add_meta_box( 'modaldialog_meta_box', __( 'Modal Dialog', 'modal-dialog' ), array(
+			$this,
+			'md_post_edit_extra'
+		), 'page', 'normal', 'high' );
 	}
 
 	function comment_redirect_filter( $location, $comment ) {
@@ -159,24 +165,24 @@ class modal_dialog_plugin {
 	//for WordPress 2.8 we have to tell, that we support 2 columns !
 	function on_screen_layout_columns( $columns, $screen ) {
 		if ( $screen == $this->pagehooktop ) {
-			$columns[$this->pagehooktop] = 1;
+			$columns[ $this->pagehooktop ] = 1;
 		} elseif ( $screen == $this->pagehooksettings ) {
-			$columns[$this->pagehooksettings] = 1;
+			$columns[ $this->pagehooksettings ] = 1;
 		}
 
 		return $columns;
 	}
 
-	function modal_dialog_default_config( $confignumber ) {
+	function modal_dialog_default_config( $confignumber, $setoptions = 'return' ) {
 
 		$options['dialogname']      = 'Default';
 		$options['contentlocation'] = 'URL';
 		$options['dialogtext']      = 'Example Dialog Text';
 
 		if ( is_multisite() ) {
-			$options['active']      = false;
-		} else if ( !is_multisite() ) {
-			$options['active']      = true;
+			$options['active'] = false;
+		} else if ( ! is_multisite() ) {
+			$options['active'] = true;
 		}
 		$options['cookieduration']  = 365;
 		$options['contenturl']      = 'http://www.google.com';
@@ -215,9 +221,18 @@ class modal_dialog_plugin {
 		$options['dialogclosingcallback']  = '';
 		$options['hidescrollbars']         = false;
 		$options['excludepages']           = '';
+		$options['dialogposition']         = 'center';
+		$options['topposition']            = '';
+		$options['leftposition']           = '';
+		$options['rightposition']          = '';
+		$options['bottomposition']         = '';
 
-		$configname = "MD_PP" . $confignumber;
-		update_option( $configname, $options );
+		if ( 'return_and_set' == $setoptions ) {
+			$configname = "MD_PP" . $confignumber;
+			update_option( $configname, $options );
+		}
+
+		return $options;
 	}
 
 	function md_install() {
@@ -269,9 +284,18 @@ class modal_dialog_plugin {
 	function on_admin_menu() {
 		//add our own option page, you can also add it to different sections or use your own one
 		global $accesslevelcheck;
-		$this->pagehooktop      = add_menu_page( __( 'Modal Dialog General Options', 'modal-dialog' ), "Modal Dialog", $accesslevelcheck, MODAL_DIALOG_ADMIN_PAGE_NAME, array( $this, 'on_show_page' ), plugins_url( 'icons/ModalDialog16.png', __FILE__ ) );
-		$this->pagehooksettings = add_submenu_page( MODAL_DIALOG_ADMIN_PAGE_NAME, __( 'Modal Dialog - Configurations', 'modal-dialog' ), __( 'Configurations', 'modal-dialog' ), $accesslevelcheck, 'modal-dialog-configurations', array( $this, 'on_show_page' ) );
-		$this->pagehookfaq      = add_submenu_page( MODAL_DIALOG_ADMIN_PAGE_NAME, __( 'Modal Dialog - FAQ', 'modal-dialog' ), __( 'FAQ', 'modal-dialog' ), $accesslevelcheck, 'modal-dialog-faq', array( $this, 'on_show_page' ) );
+		$this->pagehooktop      = add_menu_page( __( 'Modal Dialog General Options', 'modal-dialog' ), "Modal Dialog", $accesslevelcheck, MODAL_DIALOG_ADMIN_PAGE_NAME, array(
+			$this,
+			'on_show_page'
+		), plugins_url( 'icons/ModalDialog16.png', __FILE__ ) );
+		$this->pagehooksettings = add_submenu_page( MODAL_DIALOG_ADMIN_PAGE_NAME, __( 'Modal Dialog - Configurations', 'modal-dialog' ), __( 'Configurations', 'modal-dialog' ), $accesslevelcheck, 'modal-dialog-configurations', array(
+			$this,
+			'on_show_page'
+		) );
+		$this->pagehookfaq      = add_submenu_page( MODAL_DIALOG_ADMIN_PAGE_NAME, __( 'Modal Dialog - FAQ', 'modal-dialog' ), __( 'FAQ', 'modal-dialog' ), $accesslevelcheck, 'modal-dialog-faq', array(
+			$this,
+			'on_show_page'
+		) );
 
 		//register  callback gets call prior your own page gets rendered
 		add_action( 'load-' . $this->pagehooktop, array( &$this, 'on_load_page' ) );
@@ -287,14 +311,32 @@ class modal_dialog_plugin {
 		wp_enqueue_script( 'postbox' );
 
 		//add several metaboxes now, all metaboxes registered during load page can be switched off/on at "Screen Options" automatically, nothing special to do therefore
-		add_meta_box( 'modaldialog_general_meta_box', __( 'General Configuration', 'modal-dialog' ), array( $this, 'general_config_meta_box' ), $this->pagehooktop, 'normal', 'high' );
-		add_meta_box( 'modaldialog_general_save_meta_box', __( 'Save General Configuration', 'modal-dialog' ), array( $this, 'general_save_meta_box' ), $this->pagehooktop, 'normal', 'high' );
+		add_meta_box( 'modaldialog_general_meta_box', __( 'General Configuration', 'modal-dialog' ), array(
+			$this,
+			'general_config_meta_box'
+		), $this->pagehooktop, 'normal', 'high' );
+		add_meta_box( 'modaldialog_general_save_meta_box', __( 'Save General Configuration', 'modal-dialog' ), array(
+			$this,
+			'general_save_meta_box'
+		), $this->pagehooktop, 'normal', 'high' );
 
-		add_meta_box( 'modaldialog_dialog_config_selection_meta_box', __( 'Modal Dialog Selection', 'modal-dialog' ), array( $this, 'dialog_config_selection_meta_box' ), $this->pagehooksettings, 'normal', 'high' );
-		add_meta_box( 'modaldialog_dialog_config_meta_box', __( 'General Configuration', 'modal-dialog' ), array( $this, 'dialog_config_meta_box' ), $this->pagehooksettings, 'normal', 'high' );
-		add_meta_box( 'modaldialog_dialog_config_save_meta_box', __( 'Preview / Save', 'modal-dialog' ), array( $this, 'dialog_config_save_meta_box' ), $this->pagehooksettings, 'normal', 'high' );
+		add_meta_box( 'modaldialog_dialog_config_selection_meta_box', __( 'Modal Dialog Selection', 'modal-dialog' ), array(
+			$this,
+			'dialog_config_selection_meta_box'
+		), $this->pagehooksettings, 'normal', 'high' );
+		add_meta_box( 'modaldialog_dialog_config_meta_box', __( 'General Configuration', 'modal-dialog' ), array(
+			$this,
+			'dialog_config_meta_box'
+		), $this->pagehooksettings, 'normal', 'high' );
+		add_meta_box( 'modaldialog_dialog_config_save_meta_box', __( 'Preview / Save', 'modal-dialog' ), array(
+			$this,
+			'dialog_config_save_meta_box'
+		), $this->pagehooksettings, 'normal', 'high' );
 
-		add_meta_box( 'modaldialog_dialog_faq_meta_box', __( 'Frequently Asked Questions', 'modal-dialog' ), array( $this, 'dialog_config_faq_meta_box' ), $this->pagehookfaq, 'normal', 'high' );
+		add_meta_box( 'modaldialog_dialog_faq_meta_box', __( 'Frequently Asked Questions', 'modal-dialog' ), array(
+			$this,
+			'dialog_config_faq_meta_box'
+		), $this->pagehookfaq, 'normal', 'high' );
 
 	}
 
@@ -344,6 +386,8 @@ class modal_dialog_plugin {
 			$this->modal_dialog_default_config( $config );
 			$options = get_option( $configname );
 		}
+
+		$options = wp_parse_args( $options, $this->modal_dialog_default_config( 1, 'return' ) );
 
 		//define some data can be given to each metabox during rendering
 		$data['options']    = $options;
@@ -400,7 +444,7 @@ class modal_dialog_plugin {
 	function on_save_changes_general() {
 		//user permission check
 		global $accesslevelcheck;
-		if ( !current_user_can( $accesslevelcheck ) ) {
+		if ( ! current_user_can( $accesslevelcheck ) ) {
 			wp_die( __( 'Cheatin&#8217; uh?' ) );
 		}
 		//cross check the given referer
@@ -409,16 +453,16 @@ class modal_dialog_plugin {
 		$options = get_option( 'MD_General' );
 
 		foreach ( array( 'numberofmodaldialogs', 'primarydialog', 'popupscript', 'accesslevel' ) as $option_name ) {
-			if ( isset( $_POST[$option_name] ) ) {
-				$options[$option_name] = $_POST[$option_name];
+			if ( isset( $_POST[ $option_name ] ) ) {
+				$options[ $option_name ] = $_POST[ $option_name ];
 			}
 		}
 
 		foreach ( array( 'disableonmobilebrowsers' ) as $option_name ) {
-			if ( isset( $_POST[$option_name] ) ) {
-				$options[$option_name] = true;
+			if ( isset( $_POST[ $option_name ] ) ) {
+				$options[ $option_name ] = true;
 			} else {
-				$options[$option_name] = false;
+				$options[ $option_name ] = false;
 			}
 		}
 
@@ -432,7 +476,7 @@ class modal_dialog_plugin {
 	function on_save_changes_configurations() {
 		//user permission check
 		global $accesslevelcheck;
-		if ( !current_user_can( $accesslevelcheck ) ) {
+		if ( ! current_user_can( $accesslevelcheck ) ) {
 			wp_die( __( 'Cheatin&#8217; uh?' ) );
 		}
 		//cross check the given referer
@@ -449,34 +493,68 @@ class modal_dialog_plugin {
 
 		foreach (
 			array(
-				'dialogtext', 'contentlocation', 'cookieduration', 'contenturl', 'pages', 'overlaycolor', 'textcolor', 'backgroundcolor',
-				'delay', 'dialogwidth', 'dialogheight', 'cookiename', 'numberoftimes', 'exitmethod', 'sessioncookiename', 'overlayopacity',
-				'autoclosetime', 'dialogname', 'displayfrequency', 'dialogclosingcallback', 'excludepages', 'countermode'
+				'dialogtext',
+				'contentlocation',
+				'cookieduration',
+				'contenturl',
+				'pages',
+				'overlaycolor',
+				'textcolor',
+				'backgroundcolor',
+				'delay',
+				'dialogwidth',
+				'dialogheight',
+				'cookiename',
+				'numberoftimes',
+				'exitmethod',
+				'sessioncookiename',
+				'overlayopacity',
+				'autoclosetime',
+				'dialogname',
+				'displayfrequency',
+				'dialogclosingcallback',
+				'excludepages',
+				'countermode',
+				'dialogposition',
+				'topposition',
+				'leftposition',
+				'rightposition',
+				'bottomposition'
 			) as $option_name
 		) {
-			if ( isset( $_POST[$option_name] ) ) {
-				$options[$option_name] = $_POST[$option_name];
+			if ( isset( $_POST[ $option_name ] ) ) {
+				$options[ $option_name ] = $_POST[ $option_name ];
 			}
 		}
 
 		foreach ( array( 'active' ) as $option_name ) {
-			if ( isset( $_POST[$option_name] ) && $_POST[$option_name] == "True" ) {
-				$options[$option_name] = true;
-			} elseif ( isset( $_POST[$option_name] ) && $_POST[$option_name] == "False" ) {
-				$options[$option_name] = false;
+			if ( isset( $_POST[ $option_name ] ) && $_POST[ $option_name ] == "True" ) {
+				$options[ $option_name ] = true;
+			} elseif ( isset( $_POST[ $option_name ] ) && $_POST[ $option_name ] == "False" ) {
+				$options[ $option_name ] = false;
 			}
 		}
 
 		foreach (
 			array(
-				'autosize', 'showfrontpage', 'forcepagelist', 'oncepersession', 'hideclosebutton', 'centeronscroll', 'manualcookiecreation',
-				'autoclose', 'checklogin', 'showaftercommentposted', 'hidescrollbars', 'ignoreesckey'
+				'autosize',
+				'showfrontpage',
+				'forcepagelist',
+				'oncepersession',
+				'hideclosebutton',
+				'centeronscroll',
+				'manualcookiecreation',
+				'autoclose',
+				'checklogin',
+				'showaftercommentposted',
+				'hidescrollbars',
+				'ignoreesckey'
 			) as $option_name
 		) {
-			if ( isset( $_POST[$option_name] ) ) {
-				$options[$option_name] = true;
+			if ( isset( $_POST[ $option_name ] ) ) {
+				$options[ $option_name ] = true;
 			} else {
-				$options[$option_name] = false;
+				$options[ $option_name ] = false;
 			}
 		}
 
@@ -502,11 +580,17 @@ class modal_dialog_plugin {
 				<td style='width:200px'>Access level required</td>
 				<td>
 					<?php } ?>
-					<select <?php if ( !current_user_can( 'manage_options' ) ) {
+					<select <?php if ( ! current_user_can( 'manage_options' ) ) {
 						echo 'style="display: none"';
 					} ?> id="accesslevel" name="accesslevel">
-						<?php $levels = array( 'admin' => 'Administrator', 'editor' => 'Editor', 'author' => 'Author', 'contributor' => 'Contributor', 'subscriber' => 'Subscriber' );
-						if ( !isset( $genoptions['accesslevel'] ) || empty( $genoptions['accesslevel'] ) ) {
+						<?php $levels = array(
+							'admin'       => 'Administrator',
+							'editor'      => 'Editor',
+							'author'      => 'Author',
+							'contributor' => 'Contributor',
+							'subscriber'  => 'Subscriber'
+						);
+						if ( ! isset( $genoptions['accesslevel'] ) || empty( $genoptions['accesslevel'] ) ) {
 							$genoptions['accesslevel'] = 'admin';
 						}
 
@@ -529,7 +613,7 @@ class modal_dialog_plugin {
 				<td>Pop-Up Dialog Script</td>
 				<td>
 					<select name="popupscript" id="popupscript" style="width:250px;">
-						<option value="colorbox"<?php if ( ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) || !isset( $genoptions['popupscript'] ) ) {
+						<option value="colorbox"<?php if ( ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) || ! isset( $genoptions['popupscript'] ) ) {
 							echo ' selected="selected"';
 						} ?>>Colorbox
 						</option>
@@ -586,6 +670,7 @@ class modal_dialog_plugin {
 	function dialog_config_meta_box( $data ) {
 		$options = $data['options'];
 		$config  = $data['config'];
+		$genoptions = $data['genoptions'];
 		?>
 		<input type='hidden' value='<?php echo $config; ?>' name='configid' id='configid' />
 		<table>
@@ -648,7 +733,7 @@ class modal_dialog_plugin {
 				</td>
 			</tr>
 			<tr>
-				<td>Number of times to display / before displaying modal dialog </td>
+				<td>Number of times to display / before displaying modal dialog</td>
 				<td>
 					<input type="text" id="numberoftimes" name="numberoftimes" size="4" value="<?php echo $options['numberoftimes']; ?>" />
 				</td>
@@ -656,10 +741,12 @@ class modal_dialog_plugin {
 			<tr>
 				<td>Counter Mode</td>
 				<td>
-					<?php if ( empty( $options['countermode'] ) ) { $options['countermode'] = 'timestodisplay'; } ?>
+					<?php if ( empty( $options['countermode'] ) ) {
+						$options['countermode'] = 'timestodisplay';
+					} ?>
 					<select name="countermode" id="countermode" style="width:200px;">
 						<option value="timestodisplay" <?php selected( $options['countermode'] == 'timestodisplay' ); ?>>Display x Times</option>
-						<option value="timesbeforedisplay" <?php selected ( $options['countermode'] == 'timesbeforedisplay' ) ?>>Display after x Views</option>
+						<option value="timesbeforedisplay" <?php selected( $options['countermode'] == 'timesbeforedisplay' ) ?>>Display after x Views</option>
 					</select>
 				</td>
 			</tr>
@@ -680,14 +767,8 @@ class modal_dialog_plugin {
 				<td>Dialog Exit Method</td>
 				<td>
 					<select name="exitmethod" id="exitmethod" style="width:100px;">
-						<option value="onlyexitbutton"<?php if ( $options['exitmethod'] == 'onlyexitbutton' ) {
-							echo ' selected="selected"';
-						} ?>>Only Close Button
-						</option>
-						<option value="anywhere"<?php if ( $options['exitmethod'] == 'anywhere' ) {
-							echo ' selected="selected"';
-						} ?>>Anywhere
-						</option>
+						<option value="onlyexitbutton"<?php selected( $options['exitmethod'] == 'onlyexitbutton' ); ?>>Only Close Button</option>
+						<option value="anywhere"<?php selected( $options['exitmethod'] == 'anywhere' ); ?>>Anywhere</option>
 					</select>
 				</td>
 			</tr>
@@ -770,11 +851,26 @@ class modal_dialog_plugin {
 					<input type="text" id="dialogheight" name="dialogheight" size="4" value="<?php echo $options['dialogheight']; ?>" />
 				</td>
 			</tr>
+			<tr <?php if ( $genoptions['popupscript'] != 'colorbox' ) echo 'style="display:none;'; ?>>
+				<td>Dialog Position</td>
+				<td>
+					<select name="dialogposition" id="dialogposition" style="width:100px;">
+						<option value="center"<?php selected( $options['dialogposition'] == 'center' ) ?>>Center</option>
+						<option value="userposition"<?php selected( $options['dialogposition'] == 'userposition' ); ?>>User-Defined Position</option>
+					</select>
+				</td>
+			</tr>
+			<tr class="userpositionsettings" <?php if ( $genoptions['popupscript'] != 'colorbox' || ( $genoptions['popupscript'] == 'colorbox' && $options['dialogposition'] == 'center' ) ) echo 'style="display:none;"'; ?>>
+				<td>(only specify required fields, in pixels or percentage)</td>
+				<td>Top<input type="text" id="topposition" name="topposition" size="6" value="<?php echo $options['topposition']; ?>" />
+					Left<input type="text" id="leftposition" name="leftposition" size="6" value="<?php echo $options['leftposition']; ?>" />
+					Right<input type="text" id="rightposition" name="rightposition" size="6" value="<?php echo $options['rightposition']; ?>" />
+					Bottom<input type="text" id="bottomposition" name="bottomposition" size="6" value="<?php echo $options['bottomposition']; ?>" />
+				</td>
+			</tr>
 			<tr>
 				<td>Auto-Close Dialog</td>
-				<td><input type="checkbox" id="autoclose" name="autoclose" <?php if ( $options['autoclose'] ) {
-						echo ' checked="checked" ';
-					} ?>/></td>
+				<td><input type="checkbox" id="autoclose" name="autoclose" <?php checked( $options['autoclose'] ); ?>/></td>
 			</tr>
 			<tr>
 				<td>Auto-Close Time (in ms)</td>
@@ -857,6 +953,10 @@ class modal_dialog_plugin {
 					jQuery.cookie(jQuery("#cookiename").val(), null, {path: '/'});
 					jQuery.cookie(jQuery("#sessioncookiename").val(), null, {path: '/'});
 					alert("Deleted all cookies");
+				});
+
+				jQuery("#dialogposition").change(function () {
+					jQuery(".userpositionsettings").toggle();
 				});
 			});
 		</script>
@@ -1016,7 +1116,7 @@ class modal_dialog_plugin {
 
 			echo "</style>";
 			echo "<!-- [endif] -->\n";
-		} else if ( !isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
+		} else if ( ! isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
 
 			if ( empty ( $options['overlaycolor'] ) ) {
 				$options['overlaycolor'] = "rgba(200, 200, 200, " . ( empty( $options['overlayopacity'] ) ? '0.3' : $options['overlayopacity'] ) . ")";
@@ -1044,9 +1144,9 @@ class modal_dialog_plugin {
 		if ( isset( $_GET['showmodaldialog'] ) ) {
 			$display    = true;
 			$dialogname = "MD_PP" . $_GET['showmodaldialog'];
-		} elseif ( !empty( $thePostID ) ) {
+		} elseif ( ! empty( $thePostID ) ) {
 			$dialogid = get_post_meta( $post->ID, "modal-dialog-id", true );
-			if ( !empty( $dialogid ) && $dialogid != 0 ) {
+			if ( ! empty( $dialogid ) && $dialogid != 0 ) {
 				$display = true;
 			}
 			$dialogname = "MD_PP" . $dialogid;
@@ -1060,8 +1160,8 @@ class modal_dialog_plugin {
 				$optionsname = "MD_PP" . $counter;
 				$options     = get_option( $optionsname );
 
-				if ( $options['checklogin'] == false || $options['checklogin'] == '' || ( $options['checklogin'] == true && !is_user_logged_in() ) ) {
-					if ( ( $options['active'] || $manualdisplay ) && !is_admin() ) {
+				if ( $options['checklogin'] == false || $options['checklogin'] == '' || ( $options['checklogin'] == true && ! is_user_logged_in() ) ) {
+					if ( ( $options['active'] || $manualdisplay ) && ! is_admin() ) {
 						if ( $options['showfrontpage'] && is_front_page() ) {
 							$display    = true;
 							$dialogname = $optionsname;
@@ -1084,7 +1184,7 @@ class modal_dialog_plugin {
 									}
 								}
 							}
-						} elseif ( $options['forcepagelist'] == false && !is_front_page() ) {
+						} elseif ( $options['forcepagelist'] == false && ! is_front_page() ) {
 							$display    = true;
 							$dialogname = $optionsname;
 						} elseif ( $manualdisplay == true ) {
@@ -1092,7 +1192,7 @@ class modal_dialog_plugin {
 							$dialogname = $optionsname;
 						}
 
-						if ( !empty( $options['excludepages'] ) ) {
+						if ( ! empty( $options['excludepages'] ) ) {
 							$exclude_page_list = explode( ',', $options['excludepages'] );
 
 							if ( $exclude_page_list ) {
@@ -1143,9 +1243,9 @@ class modal_dialog_plugin {
 		if ( isset( $_GET['showmodaldialog'] ) ) {
 			$display  = true;
 			$dialogid = $_GET['showmodaldialog'];
-		} elseif ( !empty( $thePostID ) ) {
+		} elseif ( ! empty( $thePostID ) ) {
 			$dialogid = get_post_meta( $post->ID, "modal-dialog-id", true );
-			if ( !empty( $dialogid ) && $dialogid != 0 ) {
+			if ( ! empty( $dialogid ) && $dialogid != 0 ) {
 				$display = true;
 			} else {
 				$dialogid = 1;
@@ -1159,8 +1259,8 @@ class modal_dialog_plugin {
 				$optionsname = "MD_PP" . $counter;
 				$options     = get_option( $optionsname );
 
-				if ( $options['checklogin'] == false || $options['checklogin'] == '' || ( $options['checklogin'] == true && !is_user_logged_in() ) ) {
-					if ( ( $options['active'] || $manualdisplay ) && !is_admin() ) {
+				if ( $options['checklogin'] == false || $options['checklogin'] == '' || ( $options['checklogin'] == true && ! is_user_logged_in() ) ) {
+					if ( ( $options['active'] || $manualdisplay ) && ! is_admin() ) {
 						if ( $options['showfrontpage'] && is_front_page() ) {
 							$display = true;
 							break;
@@ -1181,13 +1281,13 @@ class modal_dialog_plugin {
 									}
 								}
 							}
-						} elseif ( $options['forcepagelist'] == false && !is_front_page() ) {
+						} elseif ( $options['forcepagelist'] == false && ! is_front_page() ) {
 							$display = true;
 						} elseif ( $manualdisplay == true ) {
 							$display = true;
 						}
 
-						if ( !empty( $options['excludepages'] ) ) {
+						if ( ! empty( $options['excludepages'] ) ) {
 							$exclude_page_list = explode( ',', $options['excludepages'] );
 
 							if ( $exclude_page_list ) {
@@ -1228,7 +1328,7 @@ class modal_dialog_plugin {
 					$output .= "<a href='" . $options['contenturl'] . "' class='iframe'></a>\n";
 				}
 
-			} else if ( !isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
+			} else if ( ! isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
 
 				if ( $options['contentlocation'] == 'Inline' ) {
 
@@ -1245,6 +1345,12 @@ class modal_dialog_plugin {
 
 			}
 
+			if ( $options['sessioncookiename'] != '' ) {
+				$sessioncookiename = $options['sessioncookiename'];
+			} else {
+				$sessioncookiename = 'modaldialogsession';
+			}
+
 			$output .= "<div id='md-content'>\n";
 
 			$output .= "<script type=\"text/javascript\">\n";
@@ -1253,17 +1359,35 @@ class modal_dialog_plugin {
 
 			if ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'fancybox' ) {
 				if ( $options['contentlocation'] == 'Inline' || empty( $options['contentlocation'] ) ) {
-					$output .= "jQuery(\"a#inline\").trigger('click')\n";
+					$output .= "\tjQuery(\"a#inline\").trigger('click')\n";
 				} elseif ( $options['contentlocation'] == 'URL' ) {
-					$output .= "jQuery(\"a.iframe\").trigger('click')\n";
+					$output .= "\tjQuery(\"a.iframe\").trigger('click')\n";
 				}
-			} else if ( !isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
+			} else if ( ! isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
 				if ( $options['contentlocation'] == 'Inline' || empty( $options['contentlocation'] ) ) {
-					$output .= "jQuery(\"a.inline\").trigger('click')\n";
+					$output .= "\tjQuery(\"a.inline\").trigger('click')\n";
 				} elseif ( $options['contentlocation'] == 'URL' ) {
-					$output .= "jQuery(\"a.iframe\").trigger('click')\n";
+					$output .= "\tjQuery(\"a.iframe\").trigger('click')\n";
+				}
+			}
+
+			if ( $options['manualcookiecreation'] == false ) {
+				$output .= "\tcookievalue++;\n";
+				$output .= "\tjQuery.cookie('" . $options['cookiename'] . "', cookievalue";
+
+				if ( $options['cookieduration'] > 0 ) {
+					$output .= ", { expires: " . $options['cookieduration'] . ", path: '/'}";
+				} else {
+					$output .= ", { path: '/' }";
 				}
 
+				$output .= ");\n";
+			}
+
+			if ( $options['oncepersession'] == true ) {
+				if ( $options['manualcookiecreation'] == false ) {
+					$output .= "\tjQuery.cookie('" . $sessioncookiename . "', 0, { path: '/' });\n";
+				}
 			}
 
 			$output .= "}\n";
@@ -1271,12 +1395,19 @@ class modal_dialog_plugin {
 			$output .= "function modal_dialog_close() {\n";
 
 			if ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'fancybox' ) {
-				$output .= "parent.jQuery.fancybox.close();";
-			} else if ( !isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
-				$output .= "jQuery.colorbox.close();";
+				$output .= "\tparent.jQuery.fancybox.close();\n";
+			} else if ( ! isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
+				$output .= "\tjQuery.colorbox.close();\n";
 			}
 
-			$output .= "}\n";
+			$output .= "}\n\n";
+
+			$output .= "var cookievalue = jQuery.cookie('" . $options['cookiename'] . "');\n";
+			$output .= "if (cookievalue == null) cookievalue = 0;\n";
+
+			if ( $options['oncepersession'] == true ) {
+				$output .= "var sessioncookie = jQuery.cookie('" . $sessioncookiename . "');\n\n";
+			}
 
 			$output .= "jQuery(document).ready(function() {\n";
 
@@ -1325,12 +1456,6 @@ class modal_dialog_plugin {
 					$output .= "'autoDimensions': false,\n";
 				}
 
-				if ( $options['sessioncookiename'] != '' ) {
-					$sessioncookiename = $options['sessioncookiename'];
-				} else {
-					$sessioncookiename = 'modaldialogsession';
-				}
-
 				$output .= "'overlayColor': '" . $options['overlaycolor'] . "',\n";
 				$output .= "'width': '" . $options['dialogwidth'] . "',\n";
 				$output .= "'height': '" . $options['dialogheight'] . "',\n";
@@ -1341,54 +1466,54 @@ class modal_dialog_plugin {
 
 				$output .= "'overlayOpacity': " . $options['overlayopacity'] . "\n";
 				$output .= "});\n";
-			} else if ( !isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
+			} else if ( ! isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
 
 				if ( $options['contentlocation'] == 'Inline' || empty( $options['contentlocation'] ) ) {
-					$output .= "jQuery(\"a.inline\").colorbox({\n";
-					$output .= "inline: true,";
-					$output .= "returnFocus: false,";
+					$output .= "\tjQuery(\"a.inline\").colorbox({\n";
+					$output .= "\t\tinline: true,\n";
+					$output .= "\t\treturnFocus: false,\n";
 				} elseif ( $options['contentlocation'] == 'URL' ) {
-					$output .= "jQuery(\"a.iframe\").colorbox({\n";
-					$output .= "iframe: true,";
-					$output .= "returnFocus: false,";
+					$output .= "\tjQuery(\"a.iframe\").colorbox({\n";
+					$output .= "\t\tiframe: true,\n";
+					$output .= "\t\treturnFocus: false,\n";
 				}
 
 				if ( $options['exitmethod'] == 'onlyexitbutton' ) {
-					$output .= "overlayClose: false,\n";
+					$output .= "\t\toverlayClose: false,\n";
 				} elseif ( $options['exitmethod'] == 'anywhere' ) {
-					$output .= "overlayClose: true,\n";
+					$output .= "\t\toverlayClose: true,\n";
 				}
 
 				if ( $options['hideclosebutton'] == true ) {
-					$output .= "closeButton: false,\n";
+					$output .= "\t\tcloseButton: false,\n";
 				} else {
-					$output .= "closeButton: true,\n";
+					$output .= "\t\tcloseButton: true,\n";
 				}
 
 				if ( isset( $options['ignoreesckey'] ) && true == $options['ignoreesckey'] ) {
-					$output .= "escKey: false,\n";
+					$output .= "\t\tescKey: false,\n";
 				} else {
-					$output .= "escKey: true,\n";
+					$output .= "\t\tescKey: true,\n";
 				}
 
 				if ( $options['centeronscroll'] == true ) {
-					$output .= "fixed: true,\n";
+					$output .= "\t\tfixed: true,\n";
 				}
 
 				if ( $options['hidescrollbars'] == true ) {
-					$output .= "scrolling: 'false',\n";
+					$output .= "\t\tscrolling: 'false',\n";
 				}
 
 				if ( $options['dialogclosingcallback'] != '' ) {
-					$output .= "onClosed: function() {" . $options['dialogclosingcallback'] . "},\n";
+					$output .= "\t\tonClosed: function() {" . $options['dialogclosingcallback'] . "},\n";
 				}
 
 				if ( $options['autosize'] == true ) {
-					$output .= "width: '80%',\n";
-					$output .= "height: '80%',\n";
+					$output .= "\t\twidth: '80%',\n";
+					$output .= "\t\theight: '80%',\n";
 				} else {
-					$output .= "width: '" . $options['dialogwidth'] . "',\n";
-					$output .= "height: '" . $options['dialogheight'] . "',\n";
+					$output .= "\t\twidth: '" . $options['dialogwidth'] . "',\n";
+					$output .= "\t\theight: '" . $options['dialogheight'] . "',\n";
 				}
 
 				if ( $options['sessioncookiename'] != '' ) {
@@ -1401,28 +1526,37 @@ class modal_dialog_plugin {
 					$options['overlayopacity'] = '0.3';
 				}
 
-				$output .= "overlayOpacity: " . $options['overlayopacity'] . "\n";
+				if ( $genoptions['popupscript'] == 'colorbox' ) {
+					if ( $options['dialogposition'] == 'userposition' ) {
+						if ( !empty( $options['topposition'] ) ) {
+							$output .= "\t\ttop: \"" . $options['topposition'] . "\",\n";
+						}
+						if ( !empty( $options['leftposition'] ) ) {
+							$output .= "\t\tleft: \"" . $options['leftposition'] . "\",\n";
+						}
+						if ( !empty( $options['rightposition'] ) ) {
+							$output .= "\t\tright: \"" . $options['rightposition'] . "\",\n";
+						}
+						if ( !empty( $options['bottomposition'] ) ) {
+							$output .= "\t\tbottom: \"" . $options['bottomposition'] . "\",\n";
+						}
+					}
+				}
 
-				$output .= "});\n";
+				$output .= "\t\toverlayOpacity: " . $options['overlayopacity'] . "\n";
+
+				$output .= "\t});\n\n";
 			}
 
 			if ( $options['oncepersession'] == true ) {
-				$output .= "var sessioncookie = jQuery.cookie('" . $sessioncookiename . "');\n";
-				$output .= "if (sessioncookie == null)\n";
-				$output .= "{\n";
-				if ( $options['manualcookiecreation'] == false ) {
-					$output .= "\tjQuery.cookie('" . $sessioncookiename . "', 0, { path: '/' });\n";
-				}
+				$output .= "\tif (sessioncookie == null)\n";
+				$output .= "\t{\n";
 			}
-
-			$output .= "\tvar cookievalue = jQuery.cookie('" . $options['cookiename'] . "');\n";
 
 			if ( $options['displayfrequency'] != 1 && $options['displayfrequency'] != '' && $options['showaftercommentposted'] == false ) {
 				$output .= "\tvar cookiechecksvalue = jQuery.cookie('" . $options['cookiename'] . "_checks');\n";
 				$output .= "\tif (cookiechecksvalue == null) cookiechecksvalue = 0;\n";
 			}
-
-			$output .= "\tif (cookievalue == null) cookievalue = 0;\n";
 
 			$output .= "\tif (cookievalue ";
 
@@ -1455,26 +1589,13 @@ class modal_dialog_plugin {
 				$output .= "\t\tif (cookiechecksvalue % " . $options['displayfrequency'] . " == 0) {\n";
 			}
 
-			if ( $options['manualcookiecreation'] == false ) {
-				$output .= "\t\tcookievalue++;\n";
-				$output .= "\t\tjQuery.cookie('" . $options['cookiename'] . "', cookievalue";
-
-				if ( $options['cookieduration'] > 0 ) {
-					$output .= ", { expires: " . $options['cookieduration'] . ", path: '/'}";
-				} else {
-					$output .= ", { path: '/' }";
-				}
-
-				$output .= ");\n";
-			}
-
 			$output .= "\t\tsetTimeout(\n";
 			$output .= "\t\t\tfunction(){\n";
 
-			$output .= "\t\t\t\tmodal_dialog_open(); ";
+			$output .= "\t\t\t\tmodal_dialog_open();\n";
 
 			$output .= "\t\t\t}, " . $options['delay'] . ");\n";
-			$output .= "\t\t};\n";
+			$output .= "\t};\n";
 
 			if ( $options['displayfrequency'] != 1 && $options['displayfrequency'] != '' && $options['showaftercommentposted'] == false ) {
 				$output .= '}';
@@ -1507,7 +1628,7 @@ class modal_dialog_plugin {
 
 		if ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'fancybox' ) {
 			wp_enqueue_script( 'fancyboxpack', plugins_url( "fancybox/jquery.fancybox-1.3.4.pack.js", __FILE__ ), "", "1.3.4" );
-		} else if ( !isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
+		} else if ( ! isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
 			wp_enqueue_script( 'colorboxpack', plugins_url( "colorbox/jquery.colorbox-min.js", __FILE__ ), "", "1.5.6" );
 			wp_enqueue_style( 'colorboxstyle', plugins_url( "colorbox/colorbox.css", __FILE__ ), "", "1.5.6" );
 		}
