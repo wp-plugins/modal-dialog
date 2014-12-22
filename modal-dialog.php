@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.1
+Version: 3.1.1
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2014  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -226,6 +226,7 @@ class modal_dialog_plugin {
 		$options['leftposition']           = '';
 		$options['rightposition']          = '';
 		$options['bottomposition']         = '';
+		$options['transitionmode']         = 'fade';
 
 		if ( 'return_and_set' == $setoptions ) {
 			$configname = "MD_PP" . $confignumber;
@@ -519,7 +520,8 @@ class modal_dialog_plugin {
 				'topposition',
 				'leftposition',
 				'rightposition',
-				'bottomposition'
+				'bottomposition',
+				'transitionmode'
 			) as $option_name
 		) {
 			if ( isset( $_POST[ $option_name ] ) ) {
@@ -741,9 +743,6 @@ class modal_dialog_plugin {
 			<tr>
 				<td>Counter Mode</td>
 				<td>
-					<?php if ( empty( $options['countermode'] ) ) {
-						$options['countermode'] = 'timestodisplay';
-					} ?>
 					<select name="countermode" id="countermode" style="width:200px;">
 						<option value="timestodisplay" <?php selected( $options['countermode'] == 'timestodisplay' ); ?>>Display x Times</option>
 						<option value="timesbeforedisplay" <?php selected( $options['countermode'] == 'timesbeforedisplay' ) ?>>Display after x Views</option>
@@ -866,6 +865,16 @@ class modal_dialog_plugin {
 					Left<input type="text" id="leftposition" name="leftposition" size="6" value="<?php echo $options['leftposition']; ?>" />
 					Right<input type="text" id="rightposition" name="rightposition" size="6" value="<?php echo $options['rightposition']; ?>" />
 					Bottom<input type="text" id="bottomposition" name="bottomposition" size="6" value="<?php echo $options['bottomposition']; ?>" />
+				</td>
+			</tr>
+			<tr>
+				<td>Transition</td>
+				<td>
+					<select name="transitionmode" id="transitionmode" style="width:200px;">
+						<option value="fade" <?php selected( $options['transitionmode'] == 'Fade' ); ?>>Fade</option>
+						<option value="elastic" <?php selected( $options['transitionmode'] == 'elastic' ) ?>>Elastic</option>
+						<option value="none" <?php selected( $options['transitionmode'] == 'none' ) ?>>None</option>
+					</select>
 				</td>
 			</tr>
 			<tr>
@@ -1464,6 +1473,11 @@ class modal_dialog_plugin {
 					$options['overlayopacity'] = '0.3';
 				}
 
+				if ( !empty( $options['transitionmode'] ) ) {
+					$output .= "\t\ttransitionIn: \"" . $options['transitionmode'] . "\",\n";
+					$output .= "\t\ttransitionOut: \"" . $options['transitionmode'] . "\",\n";
+				}
+
 				$output .= "'overlayOpacity': " . $options['overlayopacity'] . "\n";
 				$output .= "});\n";
 			} else if ( ! isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
@@ -1541,6 +1555,10 @@ class modal_dialog_plugin {
 							$output .= "\t\tbottom: \"" . $options['bottomposition'] . "\",\n";
 						}
 					}
+				}
+
+				if ( !empty( $options['transitionmode'] ) ) {
+					$output .= "\t\ttransition: \"" . $options['transitionmode'] . "\",\n";
 				}
 
 				$output .= "\t\toverlayOpacity: " . $options['overlayopacity'] . "\n";

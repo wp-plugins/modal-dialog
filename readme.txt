@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 3.1.1 =
+* Added new option to control transition mode
+
 = 3.1 =
 * Changed code to only increment cookie values when the dialog actually appears
 * Added new options to be able to specify dialog position when using Colorbox library
