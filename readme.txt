@@ -22,6 +22,11 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 3.2 =
+* Re-arranged admin panel in multiple sections of related settings
+* Fixed to display logic when multiple dialogs are present
+* New configuration to suppress display by URL name
+
 = 3.1.1 =
 * Added new option to control transition mode
 
