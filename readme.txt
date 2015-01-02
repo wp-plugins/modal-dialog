@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 3.2.1 =
+* Fixed problem with plugin activation introduced in version 3.2
+
 = 3.2 =
 * Re-arranged admin panel in multiple sections of related settings
 * Fixed to display logic when multiple dialogs are present

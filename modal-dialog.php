@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.2
+Version: 3.2.1
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2015  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -204,7 +204,7 @@ class modal_dialog_plugin {
 				$oldoptions['dialogname'] = 'Default';
 				update_option( 'MD_PP1', $oldoptions );
 			} else {
-				$this->modal_dialog_default_config( 1 );
+				modal_dialog_default_config( 1 );
 			}
 		}
 
