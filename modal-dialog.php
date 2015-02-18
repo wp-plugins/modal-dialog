@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.2.1
+Version: 3.2.2
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2015  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -651,20 +651,18 @@ class modal_dialog_plugin {
 					$options['overlayopacity'] = '0.3';
 				}
 
-				if ( $genoptions['popupscript'] == 'colorbox' ) {
-					if ( $options['dialogposition'] == 'userposition' ) {
-						if ( !empty( $options['topposition'] ) ) {
-							$output .= "\t\ttop: \"" . $options['topposition'] . "\",\n";
-						}
-						if ( !empty( $options['leftposition'] ) ) {
-							$output .= "\t\tleft: \"" . $options['leftposition'] . "\",\n";
-						}
-						if ( !empty( $options['rightposition'] ) ) {
-							$output .= "\t\tright: \"" . $options['rightposition'] . "\",\n";
-						}
-						if ( !empty( $options['bottomposition'] ) ) {
-							$output .= "\t\tbottom: \"" . $options['bottomposition'] . "\",\n";
-						}
+				if ( $options['dialogposition'] == 'userposition' ) {
+					if ( !empty( $options['topposition'] ) ) {
+						$output .= "\t\ttop: \"" . $options['topposition'] . "\",\n";
+					}
+					if ( !empty( $options['leftposition'] ) ) {
+						$output .= "\t\tleft: \"" . $options['leftposition'] . "\",\n";
+					}
+					if ( !empty( $options['rightposition'] ) ) {
+						$output .= "\t\tright: \"" . $options['rightposition'] . "\",\n";
+					}
+					if ( !empty( $options['bottomposition'] ) ) {
+						$output .= "\t\tbottom: \"" . $options['bottomposition'] . "\",\n";
 					}
 				}
 
