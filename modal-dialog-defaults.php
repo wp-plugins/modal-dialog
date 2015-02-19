@@ -66,3 +66,17 @@ function modal_dialog_default_config( $confignumber, $setoptions = 'return' ) {
 
 	return $options;
 }
+
+function modal_dialog_general_default_config( $setoptions = 'return' ) {
+	$genoptions['numberofmodaldialogs']    = 1;
+	$genoptions['primarydialog']           = 1;
+	$genoptions['disableonmobilebrowsers'] = false;
+	$genoptions['accesslevel']             = 'admin';
+	$genoptions['popupscript']             = 'colorbox';
+
+	if ( 'return_and_set' == $setoptions ) {
+		update_option( 'MD_General', $genoptions );
+	}
+
+	return $genoptions;
+}

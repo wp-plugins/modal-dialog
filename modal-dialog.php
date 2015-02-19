@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.2.2
+Version: 3.2.3
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2015  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -33,6 +33,7 @@ global $my_modal_dialog_plugin_admin;
 $accesslevelcheck = '';
 
 $genoptions = get_option( 'MD_General' );
+$genoptions = wp_parse_args( $genoptions, modal_dialog_general_default_config( 'return' ) );
 
 if ( ! isset( $genoptions['accesslevel'] ) || empty( $genoptions['accesslevel'] ) ) {
 	$genoptions['accesslevel'] = 'admin';
@@ -70,7 +71,6 @@ class modal_dialog_plugin {
 	//constructor of class, PHP4 compatible construction for backward compatibility
 	public function __construct() {
 
-		$options    = get_option( 'MD_PP' );
 		$genoptions = get_option( 'MD_General' );
 
 		if ( $genoptions == false ) {
@@ -89,10 +89,12 @@ class modal_dialog_plugin {
 		add_filter( 'modal_dialog_content', 'do_shortcode', 11 );
 
 		$genoptions = get_option( 'MD_General' );
+		$genoptions = wp_parse_args( $genoptions, modal_dialog_general_default_config( 'return' ) );
 
 		for ( $counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter ++ ) {
 			$optionsname = "MD_PP" . $counter;
 			$options     = get_option( $optionsname );
+			$options = wp_parse_args( $options, modal_dialog_default_config( $counter, 'return' ) );
 
 			if ( $genoptions['disableonmobilebrowsers'] == true ) {
 				require_once( plugin_dir_path( __FILE__ ) . '/Mobile_Detect.php' );
@@ -120,7 +122,10 @@ class modal_dialog_plugin {
 	function modal_dialog_admin_header( $dialogname = "MD_PP1" ) {
 
 		$genoptions = get_option( 'MD_General' );
+		$genoptions = wp_parse_args( $genoptions, modal_dialog_general_default_config( 'return' ) );
+
 		$options    = get_option( $dialogname );
+		$options = wp_parse_args( $options, modal_dialog_default_config( 1, 'return' ) );
 
 		if ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'fancybox' ) {
 			echo "<link rel='stylesheet' type='text/css' media='screen' href='" . plugins_url( "fancybox/jquery.fancybox-1.3.4.css", __FILE__ ) . "'/>\n";
@@ -170,10 +175,12 @@ class modal_dialog_plugin {
 
 	function comment_redirect_filter( $location, $comment ) {
 		$genoptions = get_option( 'MD_General' );
+		$genoptions = wp_parse_args( $genoptions, modal_dialog_general_default_config( 'return' ) );
 
 		for ( $counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter ++ ) {
 			$optionsname = "MD_PP" . $counter;
 			$options     = get_option( $optionsname );
+			$options = wp_parse_args( $options, modal_dialog_default_config( $counter, 'return' ) );
 
 			if ( $options['showaftercommentposted'] == true ) {
 				$commentanchorpos = strpos( $location, '#comment' );
@@ -204,19 +211,14 @@ class modal_dialog_plugin {
 				$oldoptions['dialogname'] = 'Default';
 				update_option( 'MD_PP1', $oldoptions );
 			} else {
-				modal_dialog_default_config( 1 );
+				modal_dialog_default_config( 1, 'return_and_set' );
 			}
 		}
 
 		$genoptions = get_option( 'MD_General' );
 
 		if ( $genoptions == false ) {
-			$genoptions['numberofmodaldialogs']    = 1;
-			$genoptions['primarydialog']           = 1;
-			$genoptions['disableonmobilebrowsers'] = false;
-			$genoptions['accesslevel']             = 'admin';
-
-			update_option( 'MD_General', $genoptions );
+			modal_dialog_general_default_config( 'return_and_set' );
 		}
 	}
 
@@ -242,11 +244,13 @@ class modal_dialog_plugin {
 
 		if ( $display == false ) {
 			$genoptions = get_option( 'MD_General' );
+			$genoptions = wp_parse_args( $genoptions, modal_dialog_general_default_config( 'return' ) );
 
 			for ( $counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter ++ ) {
 				$dialogid    = $counter;
 				$optionsname = "MD_PP" . $counter;
 				$options     = get_option( $optionsname );
+				$options = wp_parse_args( $options, modal_dialog_default_config( $counter, 'return' ) );
 
 				if ( $options['checklogin'] == false || $options['checklogin'] == '' || ( $options['checklogin'] == true && ! is_user_logged_in() ) ) {
 					if ( ( $options['active'] || $manualdisplay ) && ! is_admin() ) {
@@ -356,10 +360,13 @@ class modal_dialog_plugin {
 
 		if ( $display == false ) {
 			$genoptions = get_option( 'MD_General' );
+			$genoptions = wp_parse_args( $genoptions, modal_dialog_general_default_config( 'return' ) );
+
 			for ( $counter = 1; $counter <= $genoptions['numberofmodaldialogs']; $counter ++ ) {
 				$dialogid    = $counter;
 				$optionsname = "MD_PP" . $counter;
 				$options     = get_option( $optionsname );
+				$options = wp_parse_args( $options, modal_dialog_default_config( $counter, 'return' ) );
 
 				if ( ! empty( $options['excludeurlstrings'] ) ) {
 					$exclude_url_list = explode( ',', $options['excludeurlstrings'] );
@@ -430,7 +437,10 @@ class modal_dialog_plugin {
 
 			$optionsname = "MD_PP" . $dialogid;
 			$options     = get_option( $optionsname );
+			$options = wp_parse_args( $options, modal_dialog_default_config( $dialogid, 'return' ) );
+
 			$genoptions  = get_option( 'MD_General' );
+			$genoptions = wp_parse_args( $genoptions, modal_dialog_general_default_config( 'return' ) );
 
 			$output = "<!-- Modal Dialog Output -->\n";
 
@@ -750,6 +760,7 @@ class modal_dialog_plugin {
 		wp_enqueue_script( 'jquery' );
 
 		$genoptions = get_option( 'MD_General' );
+		$genoptions = wp_parse_args( $genoptions, modal_dialog_general_default_config( 'return' ) );
 
 		wp_enqueue_script( 'jquerycookies', plugins_url( "cookie.js", __FILE__ ), "", "1.0" );
 
