@@ -349,7 +349,8 @@ class modal_dialog_plugin_admin {
 				'checklogin',
 				'showaftercommentposted',
 				'hidescrollbars',
-				'ignoreesckey'
+				'ignoreesckey',
+				'showregisterpage'
 			) as $option_name
 		) {
 			if ( isset( $_POST[ $option_name ] ) ) {
@@ -551,9 +552,7 @@ class modal_dialog_plugin_admin {
 					} ?>/></td>
 				<td>Display after new comment posted</td>
 				<td>
-					<input type="checkbox" id="showaftercommentposted" name="showaftercommentposted" <?php if ( $options['showaftercommentposted'] == true ) {
-						echo ' checked="checked" ';
-					} ?>/></td>
+					<input type="checkbox" id="showaftercommentposted" name="showaftercommentposted" <?php checked( $options['showaftercommentposted'] ); ?>/></td>
 			</tr>
 			<tr>
 				<td>Auto-Close Dialog</td>
@@ -571,6 +570,8 @@ class modal_dialog_plugin_admin {
 					} ?> id="forcepagelist" name="forcepagelist" <?php if ( $options['forcepagelist'] == true ) {
 						echo ' checked="checked" ';
 					} ?>/></td>
+				<td>Show on registration page</td>
+				<td><input type="checkbox" id="showregisterpage" name="showregisterpage" <?php checked( $options['showregisterpage'] ); ?>/></td>
 			</tr>
 			<tr>
 				<td>Pages and posts to display Modal Dialog (empty for all, comma-separated IDs)</td>

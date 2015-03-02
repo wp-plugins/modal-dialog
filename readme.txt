@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 3.2.4 =
+* Added option to specify if dialog should appear on registration page
+
 = 3.2.3 =
 * Added further variable initialization to avoid PHP warnings
 
