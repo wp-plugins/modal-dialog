@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.2.4
+Version: 3.3
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2015  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -482,7 +482,9 @@ class modal_dialog_plugin {
 					$output .= "<a class='inline' href='#inline_content'></a>\n";
 					$output .= "<div style='display:none'>";
 					$output .= "<div id='inline_content' style='padding:10px;color:" . $options['textcolor'] . ";background-color:" . $options['backgroundcolor'] . "'>";
+					$output .= "<div id='inline_replaceable_content'>";
 					$output .= apply_filters( 'modal_dialog_content', stripslashes( $options['dialogtext'] ) );
+					$output .= "</div>";
 
 					$output .= "</div></div>\n";
 
@@ -538,6 +540,16 @@ class modal_dialog_plugin {
 			}
 
 			$output .= "}\n";
+
+			if ( ! isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
+				$output .= "function set_modal_dialog_content( newContent ) {\n";
+				$output .= "\tjQuery('#inline_replaceable_content').replaceWith( \"<div id='inline_replaceable_content'>\" + newContent + \"</div>\");\n";
+				$output .= "};\n";
+
+				$output .= "function set_modal_dialog_web_site_address( newAddress ) {\n";
+				$output .= "\tjQuery('a.iframe').attr( 'href', newAddress );\n";
+				$output .= "};\n";
+			}
 
 			$output .= "function modal_dialog_close() {\n";
 

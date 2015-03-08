@@ -22,6 +22,10 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 3.3 =
+* Added two new functions to change content of Modal Dialog through javascript code: set_modal_dialog_content( newContent ) and set_modal_dialog_web_site_address( newAddress )
+* Changed some of the default values for the plugin for new installations
+
 = 3.2.4 =
 * Added option to specify if dialog should appear on registration page
 

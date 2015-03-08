@@ -15,7 +15,7 @@ function modal_dialog_default_config( $confignumber, $setoptions = 'return' ) {
 		$options['active'] = true;
 	}
 	$options['cookieduration']  = 365;
-	$options['contenturl']      = 'http://www.google.com';
+	$options['contenturl']      = 'http://ici.radio-canada.ca/';
 	$options['pages']           = '';
 	$options['overlaycolor']    = '#00CC00';
 	$options['textcolor']       = '#000000';
@@ -24,7 +24,7 @@ function modal_dialog_default_config( $confignumber, $setoptions = 'return' ) {
 	$options['dialogwidth']     = 900;
 	$options['dialogheight']    = 700;
 	$options['cookiename']      = 'modal-dialog';
-	$options['numberoftimes']   = 1;
+	$options['numberoftimes']   = 10;
 	$options['countermode']     = 'timestodisplay';
 	$options['exitmethod']      = 'onlyexitbutton';
 	$options['autosize']        = false;
