@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.3
+Version: 3.4
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2015  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -379,6 +379,14 @@ class modal_dialog_plugin {
 				$options     = get_option( $optionsname );
 				$options = wp_parse_args( $options, modal_dialog_default_config( $counter, 'return' ) );
 
+				if ( !is_array( $options['contenturl'] ) ) {
+					$options['contenturl'] = array( 'Default' => $options['contenturl'] );
+				}
+
+				if ( !is_array( $options['dialogtext'] ) ) {
+					$options['dialogtext'] = array( 'Default' => $options['dialogtext'] );
+				}
+
 				if ( ! empty( $options['excludeurlstrings'] ) ) {
 					$exclude_url_list = explode( ',', $options['excludeurlstrings'] );
 					global $post;
@@ -459,7 +467,16 @@ class modal_dialog_plugin {
 			$genoptions  = get_option( 'MD_General' );
 			$genoptions = wp_parse_args( $genoptions, modal_dialog_general_default_config( 'return' ) );
 
+			if ( !is_array( $options['contenturl'] ) ) {
+				$options['contenturl'] = array( 'Default' => $options['contenturl'] );
+			}
+
+			if ( !is_array( $options['dialogtext'] ) ) {
+				$options['dialogtext'] = array( 'Default' => $options['dialogtext'] );
+			}
+
 			$output = "<!-- Modal Dialog Output -->\n";
+			$output .= "<!-- " . reset( $options['dialogtext'] ) . " -->";
 
 			if ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'fancybox' ) {
 
@@ -467,12 +484,12 @@ class modal_dialog_plugin {
 
 					$output .= "<a id=\"inline\" href=\"#data\"></a>\n";
 					$output .= "<div style=\"display:none\"><div id=\"data\" style=\"color:" . $options['textcolor'] . ";background-color:" . $options['backgroundcolor'] . ";width:100%;height:100%\">";
-					$output .= apply_filters( 'modal_dialog_content', stripslashes( $options['dialogtext'] ) );
+					$output .= apply_filters( 'modal_dialog_content', stripslashes( reset( $options['dialogtext'] ) ) );
 
 					$output .= "</div></div>\n";
 
 				} elseif ( $options['contentlocation'] == "URL" ) {
-					$output .= "<a href='" . $options['contenturl'] . "' class='iframe'></a>\n";
+					$output .= "<a href='" . reset( $options['contenturl'] ) . "' class='iframe'></a>\n";
 				}
 
 			} else if ( ! isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
@@ -483,13 +500,13 @@ class modal_dialog_plugin {
 					$output .= "<div style='display:none'>";
 					$output .= "<div id='inline_content' style='padding:10px;color:" . $options['textcolor'] . ";background-color:" . $options['backgroundcolor'] . "'>";
 					$output .= "<div id='inline_replaceable_content'>";
-					$output .= apply_filters( 'modal_dialog_content', stripslashes( $options['dialogtext'] ) );
+					$output .= apply_filters( 'modal_dialog_content', stripslashes( reset( $options['dialogtext'] ) ) );
 					$output .= "</div>";
 
 					$output .= "</div></div>\n";
 
 				} elseif ( $options['contentlocation'] == "URL" ) {
-					$output .= "<a href='" . $options['contenturl'] . "' class='iframe'></a>\n";
+					$output .= "<a href='" . reset( $options['contenturl'] ) . "' class='iframe'></a>\n";
 				}
 
 			}
@@ -504,18 +521,28 @@ class modal_dialog_plugin {
 
 			$output .= "<script type=\"text/javascript\">\n";
 
-			$output .= "function modal_dialog_open() {\n";
+			$output .= "function isBlank(str) {\n";
+			$output .= "\treturn (!str || /^\s*$/.test(str));\n";
+			$output .= "}\n\n";
+
+			$output .= "function modal_dialog_open( content_or_url_name ) {\n";
 
 			if ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'fancybox' ) {
 				if ( $options['contentlocation'] == 'Inline' || empty( $options['contentlocation'] ) ) {
-					$output .= "\tjQuery(\"a#inline\").trigger('click')\n";
+					$output .= "\tjQuery(\"a#inline\").trigger('click');\n";
 				} elseif ( $options['contentlocation'] == 'URL' ) {
-					$output .= "\tjQuery(\"a.iframe\").trigger('click')\n";
+					$output .= "\tjQuery(\"a.iframe\").trigger('click');\n";
 				}
 			} else if ( ! isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
 				if ( $options['contentlocation'] == 'Inline' || empty( $options['contentlocation'] ) ) {
+					$output .= "\tif ( ! isBlank( content_or_url_name ) ) {\n";
+					$output .= "\t\tset_modal_dialog_content_by_name(content_or_url_name);\n";
+					$output .= "\t}\n";
 					$output .= "\tjQuery(\"a.inline\").trigger('click')\n";
 				} elseif ( $options['contentlocation'] == 'URL' ) {
+					$output .= "\tif ( ! isBlank( content_or_url_name ) ) {\n";
+					$output .= "\t\tset_modal_dialog_web_site_address_by_name(content_or_url_name);\n";
+					$output .= "\t}\n";
 					$output .= "\tjQuery(\"a.iframe\").trigger('click')\n";
 				}
 			}
@@ -542,13 +569,51 @@ class modal_dialog_plugin {
 			$output .= "}\n";
 
 			if ( ! isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
-				$output .= "function set_modal_dialog_content( newContent ) {\n";
-				$output .= "\tjQuery('#inline_replaceable_content').replaceWith( \"<div id='inline_replaceable_content'>\" + newContent + \"</div>\");\n";
-				$output .= "};\n";
+				if ( $options['contentlocation'] == 'Inline' || empty( $options['contentlocation'] ) ) {
+					$output .= "var dialogcontentsarray = {\n";
+					$elementcount = count( $options['dialogtext'] );
+					$elementid    = 0;
+					foreach ( $options['dialogtext'] as $dialogtextkey => $dialogtextelement ) {
+						$textwithbrtags = nl2br( $dialogtextelement );
+						$textwithbackslashes = str_replace( '<br />', '\\', $textwithbrtags );
+						$output .= "\t'$dialogtextkey': '$textwithbackslashes'";
+						if ( $elementid != $elementcount - 1 && $elementcount != 1 ) {
+							$output .= ",";
+						}
+						$output .= "\n";
+						$elementid ++;
+					}
+					$output .= "}\n";
 
-				$output .= "function set_modal_dialog_web_site_address( newAddress ) {\n";
-				$output .= "\tjQuery('a.iframe').attr( 'href', newAddress );\n";
-				$output .= "};\n";
+					$output .= "function set_modal_dialog_content( newContent ) {\n";
+					$output .= "\tjQuery('#inline_replaceable_content').replaceWith( \"<div id='inline_replaceable_content'>\" + newContent + \"</div>\");\n";
+					$output .= "};\n";
+
+					$output .= "function set_modal_dialog_content_by_name( content_name ) {\n";
+					$output .= "\tjQuery('#inline_replaceable_content').replaceWith( \"<div id='inline_replaceable_content'>\" + dialogcontentsarray[content_name] + \"</div>\");\n";
+					$output .= "};\n";
+				} elseif ( $options['contentlocation'] == 'URL' ) {
+					$output .= "var contenturlarray = {\n";
+					$urlcount = count( $options['contenturl'] );
+					$urlid = 0;
+					foreach ( $options['contenturl'] as $contenturlkey => $contenturlelement ) {
+						$output .= "\t'$contenturlkey': '$contenturlelement'";
+						if ( $urlid != $urlcount - 1 && $urlcount != 1 ) {
+							$output .= ",";
+						}
+						$output .= "\n";
+						$urlid++;
+					}
+					$output .= "}\n";
+
+					$output .= "function set_modal_dialog_web_site_address( newAddress ) {\n";
+					$output .= "\tjQuery('a.iframe').attr( 'href', newAddress );\n";
+					$output .= "};\n";
+
+					$output .= "function set_modal_dialog_web_site_address_by_name( newAddress_name ) {\n";
+					$output .= "\tjQuery('a.iframe').attr( 'href', contenturlarray[newAddress_name] );\n";
+					$output .= "};\n";
+				}
 			}
 
 			$output .= "function modal_dialog_close() {\n";
