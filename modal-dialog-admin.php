@@ -231,7 +231,7 @@ class modal_dialog_plugin_admin {
 				// close postboxes that should be closed
 				$('.if-js-closed').removeClass('if-js-closed').addClass('closed');
 				// postboxes setup
-				postboxes.add_postbox_toggles('<?php echo $this->pagehooktop; ?>');
+				postboxes.add_postbox_toggles('<?php echo $this->pagehook; ?>');
 			});
 			//]]>
 		</script>
@@ -292,6 +292,7 @@ class modal_dialog_plugin_admin {
 
 		foreach (
 			array(
+				'dialogtext',
 				'contentlocation',
 				'cookieduration',
 				'contenturl',
@@ -356,12 +357,6 @@ class modal_dialog_plugin_admin {
 				$options[ $option_name ] = true;
 			} else {
 				$options[ $option_name ] = false;
-			}
-		}
-
-		foreach ( array( 'dialogtext_name' => 'dialogtext', 'contenturl_name' => 'contenturl' ) as $option_key => $option_name ) {
-			if ( isset( $_POST[$option_key]) && isset( $_POST[$option_name] ) ) {
-				$options[$option_name] = array_combine( $_POST[$option_key], $_POST[$option_name] );
 			}
 		}
 
@@ -478,14 +473,6 @@ class modal_dialog_plugin_admin {
 		$options    = $data['options'];
 		$config     = $data['config'];
 		$genoptions = $data['genoptions'];
-
-		if ( !is_array( $options['contenturl'] ) ) {
-			$options['contenturl'] = array( 'Default' => $options['contenturl'] );
-		}
-
-		if ( !is_array( $options['dialogtext'] ) ) {
-			$options['dialogtext'] = array( 'Default' => $options['dialogtext'] );
-		}
 		?>
 		<input type='hidden' value='<?php echo $config; ?>' name='configid' id='configid' />
 		<table>
@@ -525,125 +512,23 @@ class modal_dialog_plugin_admin {
 					</select>
 				</td>
 			</tr>
-			<tr style="margin-bottom: 16px">
+			<tr>
 				<td>Appearance Delay (in milliseconds)</td>
 				<td><input type="text" id="delay" name="delay" size="5" value="<?php echo $options['delay']; ?>" /></td>
 			</tr>
 			<tr>
-				<td style="height:20px"></td>
+				<td>Web Site Address</td>
+				<td colspan=3>
+					<input type="text" id="contenturl" name="contenturl" size="40" value="<?php echo $options['contenturl']; ?>" />
+				</td>
 			</tr>
-			<tr class="webaddressesrow" <?php if ( $options['contentlocation'] != 'URL' ) echo 'style="display:none"'; ?>>
-				<td colspan="2"><strong>
-						<?php if ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'fancybox' ) { ?>
-						Web Site Address
-						<?php } else { ?>
-						Web Site Addresses (first entry auto-displays, others can be used with javascript function calls)
-						<?php } ?>
-					</strong>
-				<table id="webaddressestable">
-					<thead>
-					<tr>
-						<th style="width:100px">Name</th>
-						<th>URL</th>
-					</tr>
-					</thead>
-					<tbody>
-					<?php $rownumber = 1; foreach ( $options['contenturl'] as $name => $url ) { ?>
-						<tr>
-							<td style="text-align:center;vertical-align: top"><input type="text" id="contenturl_name[]" name="contenturl_name[]" value="<?php echo $name; ?>" /></td>
-							<td>
-								<input type="text" id="contenturl[]" NAME="contenturl[]" size="40" value="<?php echo esc_html( stripslashes( $url ) ); ?>" />
-							</td>
-							<td>
-								<?php if ( $rownumber > 1 ) { ?>
-									<a id="delete_webaddresses_row" style="cursor: pointer"><img src="<?php echo plugins_url( 'icons/delete.png', __FILE__ ); ?>"></a>
-								<?php } ?>
-							</td>
-						</tr>
-					<?php $rownumber++;
-						if ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'fancybox' ) {
-							break;
-						}
-					} ?>
-					</tbody>
-				</table>
-				<?php if ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] != 'fancybox' ) { ?>
-				<a id="add_webaddresses_content" style="cursor: pointer"><img src="<?php echo plugins_url( 'icons/add-16x16.png', __FILE__ ); ?>">Add an address</a>
-				<?php } ?>
-			</tr>
-			<tr class="dialogcontentsrow" <?php if ( $options['contentlocation'] != 'Inline' ) echo 'style="display:none"'; ?>>
-				<td colspan="2"><strong>
-						<?php if ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'fancybox' ) { ?>
-						Dialog Contents
-						<?php } else { ?>
-						Dialog Contents (first entry auto-displays, others can be used with javascript function calls)</strong>
-						<?php } ?>
-					<table id="dialogcontentstable">
-						<thead>
-						<tr>
-							<th style="width:100px">Name</th>
-							<th>Content</th>
-						</tr>
-						</thead>
-						<tbody>
-						<?php $rownumber = 1; foreach ( $options['dialogtext'] as $name => $text ) { ?>
-						<tr>
-							<td style="text-align:center;vertical-align: top"><input type="text" id="dialogtext_name[]" name="dialogtext_name[]" value="<?php echo $name; ?>" /></td>
-							<td>
-								<TEXTAREA id="dialogtext[]" NAME="dialogtext[]" COLS=80 ROWS=3><?php echo esc_html( stripslashes( $text ) ); ?></TEXTAREA>
-							</td>
-							<td>
-								<?php if ( $rownumber > 1 ) { ?>
-								<a id="delete_dialogcontent_row" style="cursor: pointer"><img src="<?php echo plugins_url( 'icons/delete.png', __FILE__ ); ?>"></a>
-								<?php } ?>
-							</td>
-						</tr>
-						<?php $rownumber++;
-							if ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'fancybox' ) {
-								break;
-							}
-						} ?>
-						</tbody>
-					</table>
-					<?php if ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] != 'fancybox' ) { ?>
-					<a id="add_dialog_content" style="cursor: pointer"><img src="<?php echo plugins_url( 'icons/add-16x16.png', __FILE__ ); ?>">Add dialog content item</a>
-					<?php } ?>
+			<tr>
+				<td>Dialog Contents</td>
+				<td>
+					<TEXTAREA id="dialogtext" NAME="dialogtext" COLS=80 ROWS=10><?php echo esc_html( stripslashes( $options['dialogtext'] ) ); ?></TEXTAREA>
 				</td>
 			</tr>
 		</table>
-
-		<script type="text/javascript">
-			jQuery(document).ready(function () {
-				jQuery("#contentlocation").change(function () {
-					jQuery(".webaddressesrow").toggle();
-					jQuery(".dialogcontentsrow").toggle();
-				});
-				jQuery("#add_dialog_content").click(function() {
-					var rowCount = jQuery('#dialogcontentstable tr').size();
-					jQuery('#dialogcontentstable tbody>tr:last').clone(true).find('input, textarea').val('Input').end().insertAfter('#dialogcontentstable tbody>tr:last');
-					if ( rowCount <= 2 ) {
-						jQuery('#dialogcontentstable tbody>tr:last').append('<td><a id="delete_dialogcontent_row" style="cursor: pointer"><img src="<?php echo plugins_url( 'icons/delete.png', __FILE__ ); ?>"></a></td>');
-					}
-					return false;
-				});
-				jQuery('#dialogcontentstable').on( 'click', '#delete_dialogcontent_row', function() {
-					jQuery(this).closest('tr').remove();
-				} );
-
-
-				jQuery("#add_webaddresses_content").click(function() {
-					var rowCount = jQuery('#webaddressestable tr').size();
-					jQuery('#webaddressestable tbody>tr:last').clone(true).find('input').val('Input').end().insertAfter('#webaddressestable tbody>tr:last');
-					if ( rowCount <= 2 ) {
-						jQuery('#webaddressestable tbody>tr:last').append('<td><a id="delete_webaddresses_row" style="cursor: pointer"><img src="<?php echo plugins_url( 'icons/delete.png', __FILE__ ); ?>"></a></td>');
-					}
-					return false;
-				});
-				jQuery('#webaddressestable').on( 'click', '#delete_webaddresses_row', function() {
-					jQuery(this).closest('tr').remove();
-				} );
-			});
-		</script>
 	<?php
 	}
 

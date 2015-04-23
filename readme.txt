@@ -22,8 +22,8 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
-= 3.4 =
-* Added ability to define multiple dialog contents or multiple dialog addresses.
+= 3.4.1 =
+* Reverting all changes from version 3.4 
 
 = 3.3 =
 * Added two new functions to change content of Modal Dialog through javascript code: set_modal_dialog_content( newContent ) and set_modal_dialog_web_site_address( newAddress )
