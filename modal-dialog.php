@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.4.1
+Version: 3.4.2
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2015  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -257,19 +257,31 @@ class modal_dialog_plugin {
 
 				if ( $options['checklogin'] == false || $options['checklogin'] == '' || ( $options['checklogin'] == true && ! is_user_logged_in() ) ) {
 					if ( ( $options['active'] || $manualdisplay ) && ! is_admin() ) {
-						if ( in_array( $GLOBALS['pagenow'], array( 'wp-register.php', 'wp-signup.php' ) ) && !$options['showregisterpage'] ) {
-							$display = false;
+						if ( in_array( $GLOBALS['pagenow'], array(
+								'wp-register.php',
+								'wp-signup.php'
+							) ) && ! $options['showregisterpage']
+						) {
+							$display    = false;
 							$dialogname = $optionsname;
 							break;
-						} elseif ( in_array( $GLOBALS['pagenow'], array( 'wp-register.php', 'wp-signup.php' ) ) && $options['showregisterpage'] ) {
-							$display = true;
+						} elseif ( in_array( $GLOBALS['pagenow'], array(
+								'wp-register.php',
+								'wp-signup.php'
+							) ) && $options['showregisterpage']
+						) {
+							$display    = true;
 							$dialogname = $optionsname;
 							break;
 						} elseif ( $options['showfrontpage'] && is_front_page() ) {
 							$display    = true;
 							$dialogname = $optionsname;
 							break;
-						} elseif ( $options['showfrontpage'] == false && is_front_page() ) {
+						} elseif ( !empty( $options['codecondition'] ) && eval( 'return ' . $options['codecondition'] . ';' ) ) {
+							$display = true;
+							$dialogname = $optionsname;
+							break;
+					    } elseif ( $options['showfrontpage'] == false && is_front_page() ) {
 							$display = false;
 						} elseif ( $options['forcepagelist'] == true ) {
 							if ( $options['pages'] != '' ) {
@@ -417,6 +429,10 @@ class modal_dialog_plugin {
 							break;
 						} elseif ( $options['showfrontpage'] && is_front_page() ) {
 							$display = true;
+							break;
+						} elseif ( !empty( $options['codecondition'] ) && eval( 'return ' . $options['codecondition'] . ';' ) ) {
+							$display = true;
+							$dialogname = $optionsname;
 							break;
 						} elseif ( $options['showfrontpage'] == false && is_front_page() ) {
 							$display = false;

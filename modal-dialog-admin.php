@@ -320,7 +320,8 @@ class modal_dialog_plugin_admin {
 				'rightposition',
 				'bottomposition',
 				'transitionmode',
-				'excludeurlstrings'
+				'excludeurlstrings',
+				'codecondition'
 			) as $option_name
 		) {
 			if ( isset( $_POST[ $option_name ] ) ) {
@@ -588,6 +589,12 @@ class modal_dialog_plugin_admin {
 				<td>URLs not to display display on (comma-separated URL strings)</td>
 				<td colspan="3">
 					<input type="text" id="excludeurlstrings" name="excludeurlstrings" style="width: 100%" value="<?php echo $options['excludeurlstrings']; ?>" />
+				</td>
+			</tr>
+			<tr>
+				<td>PHP Condition string ( E.g. in_category(3) || is_archive(3) )</td>
+				<td colspan="3">
+					<input type="text" id="codecondition" name="codecondition" style="width: 100%" value="<?php echo $options['codecondition']; ?>" />
 				</td>
 			</tr>
 			<tr>

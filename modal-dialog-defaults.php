@@ -59,6 +59,7 @@ function modal_dialog_default_config( $confignumber, $setoptions = 'return' ) {
 	$options['transitionmode']         = 'fade';
 	$options['excludeurlstrings']      = '';
 	$options['showregisterpage']       = false;
+	$options['codecondition']          = '';
 
 	if ( 'return_and_set' == $setoptions ) {
 		$configname = "MD_PP" . $confignumber;
