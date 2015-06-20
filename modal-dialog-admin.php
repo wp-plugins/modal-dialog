@@ -594,7 +594,7 @@ class modal_dialog_plugin_admin {
 			<tr>
 				<td>PHP Condition string ( E.g. in_category(3) || is_archive(3) )</td>
 				<td colspan="3">
-					<input type="text" id="codecondition" name="codecondition" style="width: 100%" value="<?php echo $options['codecondition']; ?>" />
+					<input type="text" id="codecondition" name="codecondition" style="width: 100%" value="<?php echo stripslashes( $options['codecondition'] ); ?>" />
 				</td>
 			</tr>
 			<tr>

@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.4.2
+Version: 3.4.3
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2015  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -277,7 +277,7 @@ class modal_dialog_plugin {
 							$display    = true;
 							$dialogname = $optionsname;
 							break;
-						} elseif ( !empty( $options['codecondition'] ) && eval( 'return ' . $options['codecondition'] . ';' ) ) {
+						} elseif ( !empty( $options['codecondition'] ) && eval( 'return ' . stripslashes($options['codecondition']) . ';' ) ) {
 							$display = true;
 							$dialogname = $optionsname;
 							break;
@@ -430,9 +430,8 @@ class modal_dialog_plugin {
 						} elseif ( $options['showfrontpage'] && is_front_page() ) {
 							$display = true;
 							break;
-						} elseif ( !empty( $options['codecondition'] ) && eval( 'return ' . $options['codecondition'] . ';' ) ) {
+						} elseif ( !empty( $options['codecondition'] ) && eval( 'return ' . stripslashes( $options['codecondition'] ) . ';' ) ) {
 							$display = true;
-							$dialogname = $optionsname;
 							break;
 						} elseif ( $options['showfrontpage'] == false && is_front_page() ) {
 							$display = false;
