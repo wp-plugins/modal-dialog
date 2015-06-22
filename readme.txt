@@ -1,6 +1,6 @@
 === Modal Dialog ===
 Contributors: jackdewey
-Donate link: http://yannickcorner.nayanna.biz/wordpress-plugins/modal-dialog/
+Donate link: http://ylefebvre.ca/wordpress-plugins/modal-dialog/
 Tags: modal, dialog, pop-up, window, multiple
 Requires at least: 2.8
 Tested up to: 4.2.2
