@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.4.3
+Version: 3.5
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2015  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -96,18 +96,10 @@ class modal_dialog_plugin {
 			$options     = get_option( $optionsname );
 			$options = wp_parse_args( $options, modal_dialog_default_config( $counter, 'return' ) );
 
-			if ( $genoptions['disableonmobilebrowsers'] == true ) {
-				require_once( plugin_dir_path( __FILE__ ) . '/Mobile_Detect.php' );
-				$detect        = new MD_Mobile_Detect;
-				$mobilebrowser = $detect->isMobile();
-			}
-
 			if ( $options['active'] == true ) {
-				if ( $genoptions['disableonmobilebrowsers'] == false || ( $genoptions['disableonmobilebrowsers'] == true && $mobilebrowser == false ) ) {
-					add_action( 'wp_head', array( &$this, 'modal_dialog_header' ), 1 );
-					add_action( 'wp_footer', array( &$this, 'modal_dialog_footer' ), 1000 );
-					break;
-				}
+				add_action( 'wp_head', array( &$this, 'modal_dialog_header' ), 1 );
+				add_action( 'wp_footer', array( &$this, 'modal_dialog_footer' ), 1000 );
+				break;
 			}
 		}
 
@@ -751,7 +743,13 @@ class modal_dialog_plugin {
 				$output .= ' > ';
 			}
 
-			$output .= $options['numberoftimes'] . ")\n";
+			$output .= $options['numberoftimes'];
+			
+			if ( $genoptions['disableonmobilebrowsers'] ) {
+				$output .= " && jQuery.browser.mobile == false";
+			}
+			
+			$output .= ")\n";
 
 			$output .= "\t{\n";
 
@@ -800,19 +798,21 @@ class modal_dialog_plugin {
 		}
 	}
 
-	public function enqueue_scripts() {
-		wp_enqueue_script( 'jquery' );
-
+	function enqueue_scripts() {
 		$genoptions = get_option( 'MD_General' );
 		$genoptions = wp_parse_args( $genoptions, modal_dialog_general_default_config( 'return' ) );
 
-		wp_enqueue_script( 'jquerycookies', plugins_url( "cookie.js", __FILE__ ), "", "1.0" );
+		wp_enqueue_script( 'jquerycookies', plugins_url( 'cookie.js', __FILE__ ), 'jquery', '1.0' );
+		
+		if ( $genoptions['disableonmobilebrowsers'] ) {
+			wp_enqueue_script( 'jqueryDetectMobile', plugins_url( 'detectmobilebrowser.js', __FILE__ ), 'jquery', '1.0' );
+		}
 
 		if ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'fancybox' ) {
-			wp_enqueue_script( 'fancyboxpack', plugins_url( "fancybox/jquery.fancybox-1.3.4.pack.js", __FILE__ ), "", "1.3.4" );
+			wp_enqueue_script( 'fancyboxpack', plugins_url( 'fancybox/jquery.fancybox-1.3.4.pack.js', __FILE__ ), 'jquery', '1.3.4' );
 		} else if ( ! isset( $genoptions['popupscript'] ) || ( isset( $genoptions['popupscript'] ) && $genoptions['popupscript'] == 'colorbox' ) ) {
-			wp_enqueue_script( 'colorboxpack', plugins_url( "colorbox/jquery.colorbox-min.js", __FILE__ ), "", "1.5.6" );
-			wp_enqueue_style( 'colorboxstyle', plugins_url( "colorbox/colorbox.css", __FILE__ ), "", "1.5.6" );
+			wp_enqueue_script( 'colorboxpack', plugins_url( 'colorbox/jquery.colorbox-min.js', __FILE__ ), 'jquery', '1.5.6' );
+			wp_enqueue_style( 'colorboxstyle', plugins_url( 'colorbox/colorbox.css', __FILE__ ), '', '1.5.6' );
 		}
 	}
 }
