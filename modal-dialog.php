@@ -2,7 +2,7 @@
 /* Plugin Name: Modal Dialog
 Plugin URI: http://ylefebvre.ca/modal-dialog/
 Description: A plugin used to display a modal dialog to visitors with text content or the contents of an external web site
-Version: 3.5
+Version: 3.5.1
 Author: Yannick Lefebvre
 Author URI: http://ylefebvre.ca
 Copyright 2015  Yannick Lefebvre  (email : ylefebvre@gmail.com)
@@ -801,6 +801,8 @@ class modal_dialog_plugin {
 	function enqueue_scripts() {
 		$genoptions = get_option( 'MD_General' );
 		$genoptions = wp_parse_args( $genoptions, modal_dialog_general_default_config( 'return' ) );
+
+		wp_enqueue_script( 'jquery' );
 
 		wp_enqueue_script( 'jquerycookies', plugins_url( 'cookie.js', __FILE__ ), 'jquery', '1.0' );
 		

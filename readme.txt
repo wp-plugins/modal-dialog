@@ -22,6 +22,9 @@ The purpose of this plugin is to allow users to create one or more modal dialog(
 
 == Changelog ==
 
+= 3.5.1 =
+* Fix to make sure that jQuery is loaded
+
 = 3.5 =
 * Moved mobile browser detection client-side using Javascript
 
